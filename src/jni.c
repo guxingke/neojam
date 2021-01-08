@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
+ * 2014 Robert Lougher <rob@jamvm.org.uk>.
+ *
+ * This file is part of JamVM.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 #ifndef NO_JNI
 #include <string.h>
 #include <stdlib.h>
@@ -132,7 +153,7 @@ void delJNILref(Object *ref) {
             return;
         }
 }
- 
+
 JNIFrame *pushJNILrefFrame(int cap) {
     ExecEnv *ee = getExecEnv();
     JNIFrame *frame = (JNIFrame*)ee->last_frame;
@@ -221,7 +242,7 @@ void addJNIGrefUnlocked(Object *ref, int type) {
         if(global_refs[type].next + GREF_LIST_INCR > global_refs[type].size) {
             global_refs[type].size = global_refs[type].next + GREF_LIST_INCR;
             global_refs[type].table = sysRealloc(global_refs[type].table,
-                                   global_refs[type].size * sizeof(Object*));
+                                                 global_refs[type].size * sizeof(Object*));
         }
     }
 
@@ -550,7 +571,7 @@ void Jam_DeleteLocalRef(JNIEnv *env, jobject obj) {
 
 jboolean Jam_IsSameObject(JNIEnv *env, jobject obj1, jobject obj2) {
     return REF_TO_OBJ_WEAK_NULL_CHECK(obj1)
-        == REF_TO_OBJ_WEAK_NULL_CHECK(obj2);
+           == REF_TO_OBJ_WEAK_NULL_CHECK(obj2);
 }
 
 /* JNI helper function.  The class may be invalid
@@ -568,7 +589,7 @@ Object *allocObjectClassCheck(Class *class) {
        make sure it is initialised */
     if(initClass(class) == NULL)
         return NULL;
-        
+
     return allocObject(class);
 }
 
@@ -776,7 +797,7 @@ jarray Jam_NewObjectArray(JNIEnv *env, jsize length, jclass elementClass_ref,
         Object **data = ARRAY_DATA(array, Object*);
 
         while(length--)
-           *data++ = initial_element;
+            *data++ = initial_element;
     }
 
     return addJNILref(array);
@@ -832,7 +853,7 @@ jint Jam_MonitorExit(JNIEnv *env, jobject obj) {
 }
 
 struct _JNIInvokeInterface Jam_JNIInvokeInterface;
-JavaVM jni_invoke_intf = &Jam_JNIInvokeInterface; 
+JavaVM jni_invoke_intf = &Jam_JNIInvokeInterface;
 
 jint Jam_GetJavaVM(JNIEnv *env, JavaVM **vm) {
     *vm = &jni_invoke_intf;
@@ -1138,7 +1159,7 @@ jobject Jam_CallStaticObjectMethod(JNIEnv *env, jclass clazz,
 }
 
 jobject Jam_CallStaticObjectMethodV(JNIEnv *env, jclass clazz,
-                jmethodID methodID, va_list jargs) {
+                                    jmethodID methodID, va_list jargs) {
 
     Object **ret = executeMethodVaList(NULL, REF_TO_OBJ(clazz),
                                        methodID, jargs);
@@ -1157,7 +1178,7 @@ void Jam_CallVoidMethod(JNIEnv *env, jobject obj, jmethodID methodID, ...) {
     va_list jargs;
     MethodBlock *mb;
     Object *ob = REF_TO_OBJ(obj);
- 
+
     va_start(jargs, methodID);
     if((mb = lookupVirtualMethod(ob, methodID)) != NULL)
         executeMethodVaList(ob, ob->class, mb, jargs);
@@ -1192,13 +1213,13 @@ void Jam_CallNonvirtualVoidMethod(JNIEnv *env, jobject obj, jclass clazz,
 }
 
 void Jam_CallNonvirtualVoidMethodV(JNIEnv *env, jobject obj, jclass clazz,
-                jmethodID methodID, va_list jargs) {
+                                   jmethodID methodID, va_list jargs) {
 
-      executeMethodVaList(REF_TO_OBJ(obj), REF_TO_OBJ(clazz), methodID, jargs);
+    executeMethodVaList(REF_TO_OBJ(obj), REF_TO_OBJ(clazz), methodID, jargs);
 }
 
 void Jam_CallNonvirtualVoidMethodA(JNIEnv *env, jobject obj, jclass clazz,
-                jmethodID methodID, jvalue *jargs) {
+                                   jmethodID methodID, jvalue *jargs) {
 
     executeMethodList(REF_TO_OBJ(obj), REF_TO_OBJ(clazz), methodID, (u8*)jargs);
 }
@@ -1326,83 +1347,83 @@ PRIM_ARRAY_OP(Double, jdouble, T_DOUBLE);
         ARRAY(op, Double, type)
 
 struct _JNINativeInterface Jam_JNINativeInterface = {
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    Jam_GetVersion,
-    Jam_DefineClass,
-    Jam_FindClass,
-    Jam_FromReflectedMethod,
-    Jam_FromReflectedField,
-    Jam_ToReflectedMethod,
-    Jam_GetSuperClass,
-    Jam_IsAssignableFrom,
-    Jam_ToReflectedField,
-    Jam_Throw,
-    Jam_ThrowNew,
-    Jam_ExceptionOccurred,
-    Jam_ExceptionDescribe,
-    Jam_ExceptionClear,
-    Jam_FatalError,
-    Jam_PushLocalFrame,
-    Jam_PopLocalFrame,
-    Jam_NewGlobalRef,
-    Jam_DeleteGlobalRef,
-    Jam_DeleteLocalRef,
-    Jam_IsSameObject,
-    Jam_NewLocalRef,
-    Jam_EnsureLocalCapacity,
-    Jam_AllocObject,
-    Jam_NewObject,
-    Jam_NewObjectV,
-    Jam_NewObjectA,
-    Jam_GetObjectClass,
-    Jam_IsInstanceOf,
-    Jam_GetMethodID,
-    METHODS(/*virtual*/),
-    METHODS(Nonvirtual),
-    Jam_GetFieldID,
-    FIELDS(/*instance*/),
-    Jam_GetStaticMethodID,
-    METHODS(Static),
-    Jam_GetStaticFieldID,
-    FIELDS(Static),
-    Jam_NewString,
-    Jam_GetStringLength,
-    Jam_GetStringChars,
-    Jam_ReleaseStringChars,
-    Jam_NewStringUTF,
-    Jam_GetStringUTFLength,
-    Jam_GetStringUTFChars,
-    Jam_ReleaseStringUTFChars,
-    Jam_GetArrayLength,
-    ARRAY(New, Object,),
-    ARRAY(Get, Object, Element),
-    ARRAY(Set, Object, Element),
-    ARRAY_OPS(New,),
-    ARRAY_OPS(Get, Elements),
-    ARRAY_OPS(Release, Elements),
-    ARRAY_OPS(Get, Region),
-    ARRAY_OPS(Set, Region),
-    Jam_RegisterNatives,
-    Jam_UnregisterNatives,
-    Jam_MonitorEnter,
-    Jam_MonitorExit,
-    Jam_GetJavaVM,
-    Jam_GetStringRegion,
-    Jam_GetStringUTFRegion,
-    Jam_GetPrimitiveArrayCritical,
-    Jam_ReleasePrimitiveArrayCritical,
-    Jam_GetStringCritical,
-    Jam_ReleaseStringCritical,
-    Jam_NewWeakGlobalRef,
-    Jam_DeleteWeakGlobalRef,
-    Jam_ExceptionCheck,
-    Jam_NewDirectByteBuffer,
-    Jam_GetDirectBufferAddress,
-    Jam_GetDirectBufferCapacity,
-    Jam_GetObjectRefType
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        Jam_GetVersion,
+        Jam_DefineClass,
+        Jam_FindClass,
+        Jam_FromReflectedMethod,
+        Jam_FromReflectedField,
+        Jam_ToReflectedMethod,
+        Jam_GetSuperClass,
+        Jam_IsAssignableFrom,
+        Jam_ToReflectedField,
+        Jam_Throw,
+        Jam_ThrowNew,
+        Jam_ExceptionOccurred,
+        Jam_ExceptionDescribe,
+        Jam_ExceptionClear,
+        Jam_FatalError,
+        Jam_PushLocalFrame,
+        Jam_PopLocalFrame,
+        Jam_NewGlobalRef,
+        Jam_DeleteGlobalRef,
+        Jam_DeleteLocalRef,
+        Jam_IsSameObject,
+        Jam_NewLocalRef,
+        Jam_EnsureLocalCapacity,
+        Jam_AllocObject,
+        Jam_NewObject,
+        Jam_NewObjectV,
+        Jam_NewObjectA,
+        Jam_GetObjectClass,
+        Jam_IsInstanceOf,
+        Jam_GetMethodID,
+        METHODS(/*virtual*/),
+        METHODS(Nonvirtual),
+        Jam_GetFieldID,
+        FIELDS(/*instance*/),
+        Jam_GetStaticMethodID,
+        METHODS(Static),
+        Jam_GetStaticFieldID,
+        FIELDS(Static),
+        Jam_NewString,
+        Jam_GetStringLength,
+        Jam_GetStringChars,
+        Jam_ReleaseStringChars,
+        Jam_NewStringUTF,
+        Jam_GetStringUTFLength,
+        Jam_GetStringUTFChars,
+        Jam_ReleaseStringUTFChars,
+        Jam_GetArrayLength,
+        ARRAY(New, Object,),
+        ARRAY(Get, Object, Element),
+        ARRAY(Set, Object, Element),
+        ARRAY_OPS(New,),
+        ARRAY_OPS(Get, Elements),
+        ARRAY_OPS(Release, Elements),
+        ARRAY_OPS(Get, Region),
+        ARRAY_OPS(Set, Region),
+        Jam_RegisterNatives,
+        Jam_UnregisterNatives,
+        Jam_MonitorEnter,
+        Jam_MonitorExit,
+        Jam_GetJavaVM,
+        Jam_GetStringRegion,
+        Jam_GetStringUTFRegion,
+        Jam_GetPrimitiveArrayCritical,
+        Jam_ReleasePrimitiveArrayCritical,
+        Jam_GetStringCritical,
+        Jam_ReleaseStringCritical,
+        Jam_NewWeakGlobalRef,
+        Jam_DeleteWeakGlobalRef,
+        Jam_ExceptionCheck,
+        Jam_NewDirectByteBuffer,
+        Jam_GetDirectBufferAddress,
+        Jam_GetDirectBufferCapacity,
+        Jam_GetObjectRefType
 };
 
 jint Jam_DestroyJavaVM(JavaVM *vm) {
@@ -1424,7 +1445,7 @@ int isSupportedJNIVersion(int version) {
 int isSupportedJNIVersion_1_1(int version) {
     return version == JNI_VERSION_1_1 ||
            isSupportedJNIVersion(version);
-} 
+}
 
 static jint attachCurrentThread(void **penv, void *args, int is_daemon) {
     if(threadSelf() == NULL) {
@@ -1486,14 +1507,14 @@ jint Jam_GetEnv(JavaVM *vm, void **penv, jint version) {
 }
 
 struct _JNIInvokeInterface Jam_JNIInvokeInterface = {
-    NULL,
-    NULL,
-    NULL,
-    Jam_DestroyJavaVM,
-    Jam_AttachCurrentThread,
-    Jam_DetachCurrentThread,
-    Jam_GetEnv,
-    Jam_AttachCurrentThreadAsDaemon,
+        NULL,
+        NULL,
+        NULL,
+        Jam_DestroyJavaVM,
+        Jam_AttachCurrentThread,
+        Jam_DetachCurrentThread,
+        Jam_GetEnv,
+        Jam_AttachCurrentThreadAsDaemon,
 };
 
 jint JNI_GetDefaultJavaVMInitArgs(void *args) {
@@ -1544,7 +1565,7 @@ jint parseInitOptions(JavaVMInitArgs *vm_args, InitArgs *args) {
                         if(strncmp(type, "class", 5) == 0) {
                             args->verboseclass = TRUE;
                             type += 5;
-                         }
+                        }
                         else if(strncmp(type, "gc", 2) == 0) {
                             args->verbosegc = TRUE;
                             type += 2;
@@ -1576,7 +1597,7 @@ jint parseInitOptions(JavaVMInitArgs *vm_args, InitArgs *args) {
 
     return JNI_OK;
 
-error:
+    error:
     return JNI_ERR;
 }
 

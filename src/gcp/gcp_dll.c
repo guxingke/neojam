@@ -1,4 +1,4 @@
-#include "jam.h"
+#include "../jam.h"
 
 char *classlibDefaultBootDllPath() {
     return CLASSPATH_INSTALL_DIR"/lib/classpath";

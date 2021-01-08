@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+ * Robert Lougher <rob@jamvm.org.uk>.
+ *
+ * This file is part of JamVM.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 #ifdef NO_JNI
 #error to use classpath, Jam must be compiled with JNI!
 #endif
@@ -8,15 +29,15 @@
 #include <string.h>
 #include <errno.h>
 
-#include "jam.h"
-#include "alloc.h"
-#include "thread.h"
-#include "lock.h"
-#include "natives.h"
-#include "symbol.h"
-#include "excep.h"
-#include "reflect.h"
-#include "myclib.h"
+#include "../jam.h"
+#include "../alloc.h"
+#include "../thread.h"
+#include "../lock.h"
+#include "../natives.h"
+#include "../symbol.h"
+#include "../excep.h"
+#include "../reflect.h"
+#include "gcp.h"
 
 static int pd_offset;
 
@@ -76,6 +97,17 @@ uintptr_t *notifyAll(Class *class, MethodBlock *mb, uintptr_t *ostack) {
 
 /* arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V */
 uintptr_t *arraycopy(Class *class, MethodBlock *mb, uintptr_t *ostack) {
+    Object *src = (Object *) ostack[0];
+    int start1 = ostack[1];
+    Object *dest = (Object *) ostack[2];
+    int start2 = ostack[3];
+    int length = ostack[4];
+
+    copyarray(src, start1, dest, start2, length);
+    return ostack;
+}
+
+uintptr_t *arraycopy2(Class *class, MethodBlock *mb, uintptr_t *ostack) {
     Object *src = (Object *) ostack[0];
     int start1 = ostack[1];
     Object *dest = (Object *) ostack[2];
@@ -1248,13 +1280,13 @@ VMMethod vm_object[] = {
         {"wait",      NULL, jamWait},
         {"notify",    NULL, notify},
         {"notifyAll", NULL, notifyAll},
-        {NULL, NULL, NULL}
+        {NULL,        NULL, NULL}
 };
 
 VMMethod vm_system[] = {
         {"arraycopy",        NULL, arraycopy},
         {"identityHashCode", NULL, identityHashCode},
-        {NULL, NULL, NULL}
+        {NULL,               NULL, NULL}
 };
 
 VMMethod vm_runtime[] = {
@@ -1267,7 +1299,7 @@ VMMethod vm_runtime[] = {
         {"exit",                NULL, exitInternal},
         {"nativeLoad",          NULL, nativeLoad},
         {"mapLibraryName",      NULL, mapLibraryName},
-        {NULL, NULL, NULL}
+        {NULL,                  NULL, NULL}
 };
 
 VMMethod vm_class[] = {
@@ -1298,12 +1330,12 @@ VMMethod vm_class[] = {
         {"throwException",          NULL, throwException},
         {"hasClassInitializer",     NULL, hasClassInitializer},
         {"getDeclaredAnnotations",  NULL, getClassDeclaredAnnotations},
-        {NULL, NULL, NULL}
+        {NULL,                      NULL, NULL}
 };
 
 VMMethod vm_string[] = {
         {"intern", NULL, intern},
-        {NULL, NULL, NULL}
+        {NULL,     NULL, NULL}
 };
 
 VMMethod vm_thread[] = {
@@ -1318,13 +1350,13 @@ VMMethod vm_thread[] = {
         {"nativeSetPriority", NULL, nativeSetPriority},
         {"holdsLock",         NULL, holdsLock},
         {"getState",          NULL, getState},
-        {NULL, NULL, NULL}
+        {NULL,                NULL, NULL}
 };
 
 VMMethod vm_throwable[] = {
         {"fillInStackTrace", NULL, fillInStackTrace},
         {"getStackTrace",    NULL, getStackTrace},
-        {NULL, NULL, NULL}
+        {NULL,               NULL, NULL}
 };
 
 VMMethod vm_classloader[] = {
@@ -1337,7 +1369,7 @@ VMMethod vm_classloader[] = {
         {"getBootClassPathResource", NULL, getBootClassPathResource},
         {"getBootPackages",          NULL, getBootClassPackages},
         {"getBootPackage",           NULL, getBootClassPackage},
-        {NULL, NULL, NULL}
+        {NULL,                       NULL, NULL}
 };
 
 VMMethod vm_reflect_constructor[] = {
@@ -1348,7 +1380,7 @@ VMMethod vm_reflect_constructor[] = {
         {"getDeclaredAnnotations",  NULL, constructorDeclaredAnnotations},
         {"getParameterAnnotations", NULL, constructorParameterAnnotations},
         {"getParameterTypesNative", NULL, constructorParameterTypes},
-        {NULL, NULL, NULL}
+        {NULL,                      NULL, NULL}
 };
 
 VMMethod vm_reflect_method[] = {
@@ -1362,7 +1394,7 @@ VMMethod vm_reflect_method[] = {
         {"getParameterAnnotations", NULL, methodParameterAnnotations},
         {"getParameterTypesNative", NULL, methodParameterTypes},
         {"getReturnTypeNative",     NULL, methodReturnType},
-        {NULL, NULL, NULL}
+        {NULL,                      NULL, NULL}
 };
 
 VMMethod vm_reflect_field[] = {
@@ -1389,13 +1421,13 @@ VMMethod vm_reflect_field[] = {
         {"getLong",                NULL, fieldGetLong},
         {"getFloat",               NULL, fieldGetFloat},
         {"getDouble",              NULL, fieldGetDouble},
-        {NULL, NULL, NULL}
+        {NULL,                     NULL, NULL}
 };
 
 VMMethod vm_system_properties[] = {
         {"preInit",  NULL, propertiesPreInit},
         {"postInit", NULL, propertiesPostInit},
-        {NULL, NULL, NULL}
+        {NULL,       NULL, NULL}
 };
 
 VMMethod vm_stack_walker[] = {
@@ -1403,7 +1435,7 @@ VMMethod vm_stack_walker[] = {
         {"getCallingClass",         NULL, getCallingClass},
         {"getCallingClassLoader",   NULL, getCallingClassLoader},
         {"firstNonNullClassLoader", NULL, firstNonNullClassLoader0},
-        {NULL, NULL, NULL}
+        {NULL,                      NULL, NULL}
 };
 
 VMMethod sun_misc_unsafe[] = {
@@ -1427,7 +1459,7 @@ VMMethod sun_misc_unsafe[] = {
         {"arrayIndexScale",      NULL, arrayIndexScale},
         {"unpark",               NULL, unpark},
         {"park",                 NULL, park},
-        {NULL, NULL, NULL}
+        {NULL,                   NULL, NULL}
 };
 
 VMMethod vm_access_controller[] = {
@@ -1439,7 +1471,7 @@ VMMethod vm_management_factory[] = {
         {"getMemoryPoolNames",       NULL, getMemoryPoolNames},
         {"getMemoryManagerNames",    NULL, getMemoryPoolNames},
         {"getGarbageCollectorNames", NULL, getMemoryPoolNames},
-        {NULL, NULL, NULL}
+        {NULL,                       NULL, NULL}
 };
 
 VMMethod vm_threadmx_bean_impl[] = {
@@ -1449,54 +1481,37 @@ VMMethod vm_threadmx_bean_impl[] = {
         {"resetPeakThreadCount",         NULL, resetPeakThreadCount},
         {"getThreadInfoForId",           NULL, getThreadInfoForId},
         {"findMonitorDeadlockedThreads", NULL, findMonitorDeadlockedThreads},
-        {NULL, NULL, NULL}
+        {NULL,                           NULL, NULL}
 };
 
 VMMethod concurrent_atomic_long[] = {
         {"VMSupportsCS8", NULL, vmSupportsCS8},
-        {NULL, NULL, NULL}
+        {NULL,            NULL, NULL}
 };
 
 VMMethod vm_class_loader_data[] = {
         {"nativeUnloadDll", NULL, nativeUnloadDll},
-        {NULL, NULL, NULL}
+        {NULL,              NULL, NULL}
 };
 
-//uintptr_t *print0(Class *class, MethodBlock *mb, uintptr_t *ostack) {
-//    Object *string = (Object *) ostack[0];
-//    char *val = String2Cstr(string);
-//    jam_printf("%s", val);
-//    return ostack + 1;
-//}
-//
-//uintptr_t *print0_I(Class *class, MethodBlock *mb, uintptr_t *ostack) {
-////    Object *string = (Object *) ostack[0];
-////    char *val = String2Cstr(string);
-////    jam_printf("%s", val);
-//    return ostack + 1;
-//}
-//
-//uintptr_t *print0_Z(Class *class, MethodBlock *mb, uintptr_t *ostack) {
-////    Object *string = (Object *) ostack[0];
-////    char *val = String2Cstr(string);
-////    jam_printf("%s", val);
-//    return ostack + 1;
-//}
-//
-//uintptr_t *print0_J(Class *class, MethodBlock *mb, uintptr_t *ostack) {
-////    Object *string = (Object *) ostack[0];
-////    char *val = String2Cstr(string);
-////    jam_printf("%s", val);
-//    return ostack + 2;
-//}
-//
-//VMMethod java_lang_system[] = {
-//        {"print0", "(Ljava/lang/String;)V", print0},
-//        {"print0", "(I)V", print0_I},
-//        {"print0", "(Z)V", print0_Z},
-//        {"print0", "(J)V", print0_J},
-//        {NULL, NULL, NULL}
-//};
+uintptr_t *hook_debug(Class *class, MethodBlock *mb, uintptr_t *ostack) {
+    Object *ob = (Object *) ostack[0];
+    char *name = String2Cstr(ob);
+//    jam_printf("\n\n%s\n\n", name);
+    return ostack;
+}
+
+uintptr_t *hook_debug_i(Class *class, MethodBlock *mb, uintptr_t *ostack) {
+//    jam_printf("\n\n%d\n\n", ostack[0]);
+    return ostack;
+}
+
+VMMethod hook_hook[] = {
+        {"debug",    "(Ljava/lang/String;)V", hook_debug},
+        {"debug",     "(I)V", hook_debug_i},
+        {"arraycopy", NULL, arraycopy2},
+        {NULL,        NULL, NULL}
+};
 
 VMClass native_methods[] = {
         {"java/lang/VMClass",                           vm_class},
@@ -1518,5 +1533,6 @@ VMClass native_methods[] = {
         {"sun/misc/Unsafe",                             sun_misc_unsafe},
         {"jamvm/java/lang/VMClassLoaderData$Unloader",  vm_class_loader_data},
         {"java/util/concurrent/atomic/AtomicLong",      concurrent_atomic_long},
+        {"hook/Hook",                                   hook_hook},
         {NULL, NULL}
 };

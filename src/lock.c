@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2013
+ * Robert Lougher <rob@jamvm.org.uk>.
+ *
+ * This file is part of JamVM.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -209,7 +229,7 @@ int monitorWait(Monitor *mon, Thread *self, long long ms, int ns,
         while(self->wait_next != NULL && !self->interrupting && !timeout)
             if(timed) {
                 timeout = pthread_cond_timedwait(&self->wait_cv,
-                              &mon->lock, &ts) == ETIMEDOUT;
+                                                 &mon->lock, &ts) == ETIMEDOUT;
 
                 /* On Linux/i386 systems using LinuxThreads,
                    pthread_cond_timedwait is implemented using
@@ -236,7 +256,7 @@ int monitorWait(Monitor *mon, Thread *self, long long ms, int ns,
                 /* Notify lost.  Signal another thread only if it
                    was on the wait set at the time of the notify */
                 if(mon->wait_set != NULL &&
-                                mon->wait_set->wait_id < self->notify_id) {
+                   mon->wait_set->wait_id < self->notify_id) {
                     Thread *thread = waitSetSignalNext(mon);
                     thread->notify_id = self->notify_id;
                 }
@@ -353,10 +373,10 @@ void objectLock(Object *obj) {
         return;
     }
 
-try_again:
+    try_again:
     mon = findMonitor(obj);
 
-try_again2:
+    try_again2:
     if((entering = LOCKWORD_READ(&mon->entering)) == UN_USED)
         goto try_again;
 
@@ -365,16 +385,16 @@ try_again2:
 
     if(mon->obj != obj) {
         while(entering = LOCKWORD_READ(&mon->entering),
-                        !(LOCKWORD_COMPARE_AND_SWAP(&mon->entering,
-                                                    entering, entering-1)));
+                !(LOCKWORD_COMPARE_AND_SWAP(&mon->entering,
+                                            entering, entering-1)));
         goto try_again;
     }
 
     monitorLock(mon, self);
 
     while(entering = LOCKWORD_READ(&mon->entering),
-                    !(LOCKWORD_COMPARE_AND_SWAP(&mon->entering,
-                                                entering, entering-1)));
+            !(LOCKWORD_COMPARE_AND_SWAP(&mon->entering,
+                                        entering, entering-1)));
 
     while((LOCKWORD_READ(&obj->lock) & SHAPE_BIT) == 0) {
         setFlcBit(obj);
@@ -402,7 +422,7 @@ void objectUnlock(Object *obj) {
         /* Required by thin-locking mechanism. */
         MBARRIER();
 
-retry:
+        retry:
         if(testFlcBit(obj)) {
             Monitor *mon = findMonitor(obj);
 
@@ -420,24 +440,24 @@ retry:
         if((lockword & (TID_MASK|SHAPE_BIT)) == thin_locked)
             LOCKWORD_WRITE(&obj->lock, lockword - (1<<COUNT_SHIFT));
         else
-            if((lockword & SHAPE_BIT) != 0) {
-                Monitor *mon = (Monitor*) (lockword & ~SHAPE_BIT);
+        if((lockword & SHAPE_BIT) != 0) {
+            Monitor *mon = (Monitor*) (lockword & ~SHAPE_BIT);
 
-                if((mon->count == 0) && (LOCKWORD_READ(&mon->entering) == 0) &&
-                                (mon->in_wait == 0)) {
-                    TRACE("Thread %p is deflating obj %p...\n", self, obj);
+            if((mon->count == 0) && (LOCKWORD_READ(&mon->entering) == 0) &&
+               (mon->in_wait == 0)) {
+                TRACE("Thread %p is deflating obj %p...\n", self, obj);
 
-                    /* This barrier is not needed for the thin-locking
-                       implementation; it's a requirement of the Java
-                       memory model. */
-                    JMM_UNLOCK_MBARRIER();
+                /* This barrier is not needed for the thin-locking
+                   implementation; it's a requirement of the Java
+                   memory model. */
+                JMM_UNLOCK_MBARRIER();
 
-                    LOCKWORD_WRITE(&obj->lock, 0);
-                    LOCKWORD_COMPARE_AND_SWAP(&mon->entering, 0, UN_USED);
-                }
-
-                monitorUnlock(mon, self);
+                LOCKWORD_WRITE(&obj->lock, 0);
+                LOCKWORD_COMPARE_AND_SWAP(&mon->entering, 0, UN_USED);
             }
+
+            monitorUnlock(mon, self);
+        }
     }
 }
 
@@ -463,7 +483,7 @@ void objectWait(Object *obj, long long ms, int ns, int interruptible) {
     if(monitorWait(mon, self, ms, ns, TRUE, interruptible))
         return;
 
-not_owner:
+    not_owner:
     signalException(java_lang_IllegalMonitorStateException,
                     "thread not owner");
 }
@@ -554,5 +574,5 @@ int initialiseMonitor() {
 }
 
 void threadMonitorCache() {
-   hashIterate(mon_cache);
+    hashIterate(mon_cache);
 }

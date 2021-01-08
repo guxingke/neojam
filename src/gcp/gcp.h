@@ -2,8 +2,10 @@
 #ifndef KKK_MYCLIB_H
 #define KKK_MYCLIB_H
 
-#include "jam.h"
-#include "thread.h"
+// gun classpath
+
+#include "../jam.h"
+#include "../thread.h"
 
 #define IS_VMTHREAD(cb)    (cb->flags & VMTHREAD)
 #define IS_VMTHROWABLE(cb) (cb->flags & VMTHROWABLE)

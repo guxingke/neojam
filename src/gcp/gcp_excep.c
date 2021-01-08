@@ -1,5 +1,5 @@
-#include "jam.h"
-#include "symbol.h"
+#include "../jam.h"
+#include "../symbol.h"
 
 static Class *vmthrow_class;
 static int backtrace_offset;
@@ -29,7 +29,7 @@ Object *setStackTrace0(ExecEnv *ee, int max_depth) {
     Object *array = stackTrace(ee, max_depth);
     Object *vmthrwble = allocObject(vmthrow_class);
 
-    if (vmthrwble != NULL)
+    if(vmthrwble != NULL)
         INST_DATA(vmthrwble, Object*, backtrace_offset) = array;
 
     return vmthrwble;
@@ -38,7 +38,7 @@ Object *setStackTrace0(ExecEnv *ee, int max_depth) {
 Object *convertStackTrace(Object *vmthrwble) {
     Object *array = INST_DATA(vmthrwble, Object*, backtrace_offset);
 
-    if (array == NULL)
+    if(array == NULL)
         return NULL;
 
     return stackTraceElements(array);
@@ -51,14 +51,13 @@ Object *convertStackTrace(Object *vmthrwble) {
 void markVMThrowable(Object *vmthrwble, int mark) {
     Object *array;
 
-    if ((array = INST_DATA(vmthrwble, Object*, backtrace_offset)) != NULL) {
+    if((array = INST_DATA(vmthrwble, Object*, backtrace_offset)) != NULL) {
         uintptr_t *src = ARRAY_DATA(array, uintptr_t);
         int i, depth = ARRAY_LEN(array);
 
-        for (i = 0; i < depth; i += 2) {
-            MethodBlock *mb = (MethodBlock *) src[i];
+        for(i = 0; i < depth; i += 2) {
+            MethodBlock *mb = (MethodBlock*)src[i];
             markObject(mb->class, mark);
         }
     }
 }
-

@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012
+ * Robert Lougher <rob@jamvm.org.uk>.
+ *
+ * This file is part of JamVM.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,9 +38,10 @@ static HashTable hash_table;
 
 static Class *string_class;
 static int value_offset;
+static int count_offset;
 
 #ifdef SHARED_CHAR_BUFFERS
-static int count_offset; 
+static int count_offset;
 static int offset_offset;
 #define STRING_LEN(string) INST_DATA(string, int, count_offset)
 #define STRING_OFFSET(string) INST_DATA(string, int, offset_offset)
@@ -35,7 +57,7 @@ int stringHash(Object *ptr) {
     unsigned short *dpntr = ARRAY_DATA(array, unsigned short) + offset;
     int hash = 0;
 
-    for (; len > 0; len--)
+    for(; len > 0; len--)
         hash = hash * 37 + *dpntr++;
 
     return hash;
@@ -45,7 +67,7 @@ int stringComp(Object *ptr, Object *ptr2) {
     int len = STRING_LEN(ptr);
     int len2 = STRING_LEN(ptr2);
 
-    if (len == len2) {
+    if(len == len2) {
         int offset = STRING_OFFSET(ptr);
         int offset2 = STRING_OFFSET(ptr2);
         Object *array = INST_DATA(ptr, Object*, value_offset);
@@ -53,9 +75,9 @@ int stringComp(Object *ptr, Object *ptr2) {
         unsigned short *src = ARRAY_DATA(array, unsigned short) + offset;
         unsigned short *dst = ARRAY_DATA(array2, unsigned short) + offset2;
 
-        for (; (len > 0) && (*src++ == *dst++); len--);
+        for(; (len > 0) && (*src++ == *dst++); len--);
 
-        if (len == 0)
+        if(len == 0)
             return TRUE;
     }
 
@@ -68,8 +90,8 @@ Object *createString(char *utf8) {
     Object *array;
     Object *ob;
 
-    if ((array = allocTypeArray(T_CHAR, len)) == NULL ||
-        (ob = allocObject(string_class)) == NULL)
+    if((array = allocTypeArray(T_CHAR, len)) == NULL ||
+       (ob = allocObject(string_class)) == NULL)
         return NULL;
 
     data = ARRAY_DATA(array, unsigned short);
@@ -86,7 +108,7 @@ Object *createString(char *utf8) {
 Object *findInternedString(Object *string) {
     Object *interned;
 
-    if (string == NULL)
+    if(string == NULL)
         return NULL;
 
     /* Add if absent, no scavenge, locked */
@@ -106,17 +128,17 @@ void freeInternedStrings() {
 
     hashIterateP(hash_table);
 
-    if (unmarked) {
+    if(unmarked) {
         int size;
 
         /* Update count to remaining number of strings */
         hash_table.hash_count -= unmarked;
 
         /* Calculate nearest multiple of 2 larger than count */
-        for (size = 1; size < hash_table.hash_count; size <<= 1);
+        for(size = 1; size < hash_table.hash_count; size <<= 1);
 
         /* Ensure new table is less than 2/3 full */
-        size = hash_table.hash_count * 3 > size * 2 ? size << 1 : size;
+        size = hash_table.hash_count*3 > size*2 ? size<< 1 : size;
 
         resizeHash(&hash_table, size);
     }
@@ -135,7 +157,7 @@ char *String2Buff0(Object *string, char *buff, int len) {
     unsigned short *str = ARRAY_DATA(array, unsigned short) + offset;
     char *pntr;
 
-    for (pntr = buff; len > 0; len--)
+    for(pntr = buff; len > 0; len--)
         *pntr++ = *str++;
 
     *pntr = '\0';
@@ -144,7 +166,7 @@ char *String2Buff0(Object *string, char *buff, int len) {
 
 char *String2Buff(Object *string, char *buff, int buff_len) {
     int str_len = STRING_LEN(string);
-    int len = buff_len - 1 < str_len ? buff_len - 1 : str_len;
+    int len = buff_len-1 < str_len ? buff_len-1 : str_len;
 
     return String2Buff0(string, buff, len);
 }
@@ -160,11 +182,11 @@ int initialiseString() {
     FieldBlock *value;
 
     string_class = findSystemClass0(SYMBOL(java_lang_String));
-    if (string_class == NULL)
+    if(string_class == NULL)
         goto error;
 
     value = findField(string_class, SYMBOL(value), SYMBOL(array_C));
-    if (value == NULL)
+    if(value == NULL)
         goto error;
 
     registerStaticClassRef(&string_class);
@@ -195,14 +217,13 @@ int initialiseString() {
 }
 
 #ifndef NO_JNI
-
 /* Functions used by JNI */
 
 Object *createStringFromUnicode(unsigned short *unicode, int len) {
     Object *array = allocTypeArray(T_CHAR, len);
     Object *ob = allocObject(string_class);
 
-    if (array != NULL && ob != NULL) {
+    if(array != NULL && ob != NULL) {
         unsigned short *data = ARRAY_DATA(array, unsigned short);
         memcpy(data, unicode, len * sizeof(unsigned short));
 
@@ -245,5 +266,4 @@ char *String2Utf8(Object *string) {
 
     return unicode2Utf8(unicode, len, utf8);
 }
-
 #endif

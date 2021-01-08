@@ -37,10 +37,10 @@ uintptr_t *executeJava() {
 
     while (1) {
 //        jam_printf("%x %u\n", *pc, *pc);
-        ClassBlock *cb = CLASS_CB(mb->class);
-        if (strcmp(cb->name, "java/io/File") == 0) {
-            jam_printf("%x %u\n", *pc, *pc);
-        }
+//        ClassBlock *cb = CLASS_CB(mb->class);
+//        if (strcmp(cb->name, "java/io/File") == 0) {
+//            jam_printf("%x %u\n", *pc, *pc);
+//        }
         switch (*pc) {
             default:
                 jam_fprintf(__stdoutp, "Unrecognised opcode %d in: %s.%s\n", *pc,
@@ -2322,7 +2322,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 184:
+            case OPC_INVOKESTATIC:
                 ({
                     {
                         int id;
@@ -2863,7 +2863,7 @@ uintptr_t *executeJava() {
 
                 if (new_mb->access_flags & 0x0100) {
                     ClassBlock *cb = CLASS_CB(new_mb->class);
-                    jam_printf("native call %s.%s%s \n", cb->name, new_mb->name, new_mb->type);
+//                    jam_printf("native call %s.%s%s \n", cb->name, new_mb->name, new_mb->type);
                     ostack = (*new_mb->native_invoker)(new_mb->class, new_mb, arg1);
 
                     if (sync_ob)
@@ -2885,7 +2885,7 @@ uintptr_t *executeJava() {
                     pc = (CodePntr) mb->code;
                     cp = &(((ClassBlock *) (mb->class + 1))->constant_pool);
                     ClassBlock *cb = CLASS_CB(mb->class);
-                    jam_printf("java call %s.%s%s \n", cb->name, mb->name, mb->type);
+//                    jam_printf("java call %s.%s%s \n", cb->name, mb->name, mb->type);
                 }
                 {
                     pc += 0;
@@ -2909,7 +2909,7 @@ uintptr_t *executeJava() {
                     objectUnlock(sync_ob);
                 }
                 ClassBlock *cb = CLASS_CB(mb->class);
-                jam_printf("method ret %s.%s%s \n", cb->name, mb->name, mb->type);
+//                jam_printf("method ret %s.%s%s \n", cb->name, mb->name, mb->type);
 
                 mb = frame->mb;
                 ostack = lvars;

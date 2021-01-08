@@ -1,6 +1,6 @@
-#include "jam.h"
-#include "thread.h"
-#include "myclib.h"
+#include "../jam.h"
+#include "../thread.h"
+#include "gcp.h"
 
 #ifdef TRACEGC
 #define TRACE(fmt, ...) jam_printf(fmt, ## __VA_ARGS__)

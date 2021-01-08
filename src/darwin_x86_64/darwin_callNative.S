@@ -1,4 +1,4 @@
-#include  "config.h"
+#include  "../config.h"
 
 #ifndef USE_FFI
 .text

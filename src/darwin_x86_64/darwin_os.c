@@ -6,7 +6,7 @@
 #include <sys/sysctl.h>
 #include <pthread.h>
 
-#include "jam.h"
+#include "../jam.h"
 
 void *nativeStackBase() {
     return pthread_get_stackaddr_np(pthread_self());

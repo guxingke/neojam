@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+ * Robert Lougher <rob@jamvm.org.uk>.
+ *
+ * This file is part of JamVM.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2,
+ * or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
 #include <string.h>
 
@@ -33,17 +53,17 @@ void copyarray(Object *src, int start1, Object *dest, int start2, int length) {
     dcb = CLASS_CB(dest->class);
 
     if((scb->name[0] != '[') || (dcb->name[0] != '['))
-        goto storeExcep; 
+        goto storeExcep;
 
     if((start1 < 0) || (start2 < 0) || (length < 0)
-                    || ((start1 + length) > ARRAY_LEN(src))
-                    || ((start2 + length) > ARRAY_LEN(dest))) {
+       || ((start1 + length) > ARRAY_LEN(src))
+       || ((start2 + length) > ARRAY_LEN(dest))) {
         signalException(java_lang_ArrayIndexOutOfBoundsException, NULL);
         return;
     }
 
-    sdata = ARRAY_DATA(src, char);            
-    ddata = ARRAY_DATA(dest, char);            
+    sdata = ARRAY_DATA(src, char);
+    ddata = ARRAY_DATA(dest, char);
 
     if(isInstanceOf(dest->class, src->class)) {
         int size = sigElement2Size(scb->name[1]);
@@ -53,13 +73,13 @@ void copyarray(Object *src, int start1, Object *dest, int start2, int length) {
 
     if(!(((scb->name[1] == 'L') || (scb->name[1] == '[')) &&
          ((dcb->name[1] == 'L') || (dcb->name[1] == '['))))
-        goto storeExcep; 
+        goto storeExcep;
 
     /* Not compatible array types, but elements may be compatible...
        e.g. src = [Ljava/lang/Object, dest = [Ljava/lang/String, but
        all src = Strings - check one by one...
      */
-            
+
     if(scb->dim > dcb->dim)
         goto storeExcep;
 
@@ -74,7 +94,7 @@ void copyarray(Object *src, int start1, Object *dest, int start2, int length) {
 
     return;
 
-storeExcep:
+    storeExcep:
     signalException(java_lang_ArrayStoreException, NULL);
 }
 
@@ -94,7 +114,7 @@ uintptr_t *objectFieldOffset(Class *class, MethodBlock *mb, uintptr_t *ostack) {
     FieldBlock *fb = fbFromReflectObject((Object*)ostack[1]);
 
     *(long long*)ostack = (long long)(uintptr_t)
-                          &(INST_DATA((Object*)NULL, int, fb->u.offset));
+            &(INST_DATA((Object*)NULL, int, fb->u.offset));
     return ostack + 2;
 }
 

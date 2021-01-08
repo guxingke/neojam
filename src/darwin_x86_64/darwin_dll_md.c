@@ -1,4 +1,4 @@
-#include "jam.h"
+#include "../jam.h"
 
 #ifndef USE_FFI
 #include <stdio.h>

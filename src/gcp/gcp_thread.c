@@ -2,9 +2,9 @@
 #define _POSIX_PTHREAD_SEMANTICS
 #include <signal.h>
 
-#include "jam.h"
-#include "symbol.h"
-#include "thread.h"
+#include "../jam.h"
+#include "../symbol.h"
+#include "../thread.h"
 
 static int vmData_offset;
 static int thread_offset;

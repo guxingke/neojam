@@ -104,11 +104,11 @@ void *executeMethodVaList(Object *ob, Class *class, MethodBlock *mb,
 
     if (mb->access_flags & ACC_NATIVE) {
         ClassBlock *cb = CLASS_CB(class);
-        jam_printf("native call %s.%s%s\n", cb->name, mb->name, mb->type);
+//        jam_printf("native call %s.%s%s\n", cb->name, mb->name, mb->type);
         (*mb->native_invoker)(class, mb, ret);
     } else {
         ClassBlock *cb = CLASS_CB(class);
-        jam_printf("java call %s.%s%s\n", cb->name, mb->name, mb->type);
+//        jam_printf("java call %s.%s%s\n", cb->name, mb->name, mb->type);
         executeJava();
     }
 

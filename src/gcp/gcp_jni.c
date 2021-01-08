@@ -1,6 +1,6 @@
-#include "jam.h"
-#include "jni.h"
-#include "symbol.h"
+#include "../jam.h"
+#include "../jni.h"
+#include "../symbol.h"
 
 /* Cached values initialised on startup for JNI 1.4 NIO support */
 static int buffCap_offset, buffAddr_offset, rawdata_offset;
