@@ -4,7 +4,7 @@
 #define VERSION "0.0.1-devel"
 #define HAVE_ALLOCA_H 1
 
-#define INSTALL_DIR "/usr/local/app/kkk"
+#define INSTALL_DIR "/usr/local/app/neojam"
 #define CLASSPATH_INSTALL_DIR "/usr/local/classpath"
 
 /* src/config.h.  Generated from config.h.in by configure.  */

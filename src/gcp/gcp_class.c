@@ -114,7 +114,7 @@ Class *classlibBootPackagesArrayClass() {
 #define CLASSPATH_CLASSES CLASSPATH_INSTALL_DIR"/share/classpath/glibj.zip"
 #else
 #define JAMVM_CLASSES INSTALL_DIR"/share/classes"
-#define CLASSPATH_CLASSES CLASSPATH_INSTALL_DIR"/share/classpath/glibj"
+#define CLASSPATH_CLASSES CLASSPATH_INSTALL_DIR"/share/classpath"
 #endif
 
 #define DFLT_BCP JAMVM_CLASSES":"CLASSPATH_CLASSES
