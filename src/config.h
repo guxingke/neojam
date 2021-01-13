@@ -141,7 +141,7 @@
 /* #undef OPENJDK_VERSION */
 
 /* Name of package */
-#define PACKAGE "jamvm"
+#define PACKAGE "neojam"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""

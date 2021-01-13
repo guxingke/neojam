@@ -63,7 +63,7 @@ int ref_referent_offset = -1;
 int ref_queue_offset;
 
 /* hash table containing packages loaded by the boot loader */
-#define PCKG_INITSZE 1<<6
+#define PCKG_INITSZE 1<<6 // 64
 static HashTable boot_packages;
 
 /* Instance of java.lang.Class for java.lang.Class */
@@ -81,7 +81,7 @@ int enqueue_mtbl_idx;
 
 /* hash table containing classes loaded by the boot loader and
    internally created arrays */
-#define CLASS_INITSZE 1<<8
+#define CLASS_INITSZE 1<<8 // 256
 static HashTable boot_classes;
 
 /* Array large enough to hold all primitive classes -
@@ -124,6 +124,7 @@ static Class *addClassToHash(Class *class, Object *class_loader) {
     return entry;
 }
 
+// 给 class 关联上 java_lang_Class
 static void prepareClass(Class *class) {
     ClassBlock *cb = CLASS_CB(class);
 
@@ -262,13 +263,29 @@ Class *parseClass(char *classname, char *data, int offset, int len,
     READ_U2(minor_version, ptr, len);
     READ_U2(major_version, ptr, len);
 
+    // 分配 class
+    // | 8 b    | 16 b           | 208 b                |
+    // | HEADER | sizeOf (Class) | sizeOf(ClassBlock)   |
+    //          | <-- 返回的指针位置
+
+    // 共 232 b
+    // 同 redis sds 的实现有一定相似，尤其是返回的指针位置
     if ((class = allocClass()) == NULL)
         return NULL;
 
+    // #define CLASS_CB(classRef)           ((ClassBlock*)(classRef+1))
+    // -> classblock = ((ClassBlock *) (class + 1));
+    // 怎么理解 (class + 1) ?
+    // 指针 + 1 => 指针+1所增加的地址值为这个指针类型所占用的内存大小的值
+    // e.g 当前地址，0x008 -> + 1 -> 0x018 -> 差值 0x10 -> 16 (正是 Class 类型的大小( uintptr (8), *cls (8))）
+    // 由于 allocClass 分配时 分配了 Class 和 ClassBlock 的空间， 此处 class + 1 ， 正是指向 ClassBlock 的指针。
     classblock = CLASS_CB(class);
+
     READ_U2(cp_count, ptr, len);
 
+    // 读取常量池
     constant_pool = &classblock->constant_pool;
+    // sysMalloc ? 使用 sysMalloc 分配，则在 gc Class 实例内存时需要同时回收 系统内存。
     constant_pool->type = sysMalloc(cp_count);
     constant_pool->info = sysMalloc(cp_count * sizeof(ConstantPoolEntry));
 
@@ -352,9 +369,11 @@ Class *parseClass(char *classname, char *data, int offset, int len,
     /* Set count after constant pool has been initialised -- it is now
        safe to be scanned by GC */
     classblock->constant_pool_count = cp_count;
+    //END 读取常量池
 
     READ_U2(classblock->access_flags, ptr, len);
 
+    // this class idx
     READ_TYPE_INDEX(this_idx, constant_pool, CONSTANT_Class, ptr, len);
     classblock->name = CP_UTF8(constant_pool,
                                CP_CLASS(constant_pool, this_idx));
@@ -365,8 +384,10 @@ Class *parseClass(char *classname, char *data, int offset, int len,
         return NULL;
     }
 
+    // 准备阶段
     prepareClass(class);
 
+    // java/lang/Object 的特殊逻辑
     if (classblock->name == SYMBOL(java_lang_Object)) {
         READ_U2(super_idx, ptr, len);
         if (super_idx) {
@@ -377,8 +398,10 @@ Class *parseClass(char *classname, char *data, int offset, int len,
         READ_TYPE_INDEX(super_idx, constant_pool, CONSTANT_Class, ptr, len);
     }
 
+    // 赋值 class_loader, 为后续加载接口使用
     classblock->class_loader = class_loader;
 
+    // 接口相关
     READ_U2(intf_count = classblock->interfaces_count, ptr, len);
     interfaces = classblock->interfaces =
             sysMalloc(intf_count * sizeof(Class *));
@@ -387,22 +410,27 @@ Class *parseClass(char *classname, char *data, int offset, int len,
     for (i = 0; i < intf_count; i++) {
         u2 index;
         READ_TYPE_INDEX(index, constant_pool, CONSTANT_Class, ptr, len);
+        // 当前类依赖的接口在类加载时解析
         interfaces[i] = resolveClass(class, index, FALSE, FALSE);
         if (exceptionOccurred())
             return NULL;
     }
+    //END 接口相关
 
+    // 注解，略...
     memset(&extra_attributes, 0, sizeof(ExtraAttributes));
 
+    // 字段
     READ_U2(classblock->fields_count, ptr, len);
-    injected_fields_count = classlibInjectedFieldsCount(classblock->name);
-    classblock->fields_count += injected_fields_count;
+//    injected_fields_count = classlibInjectedFieldsCount(classblock->name);
+//    classblock->fields_count += injected_fields_count;
     classblock->fields = sysMalloc(classblock->fields_count *
                                    sizeof(FieldBlock));
 
-    if (injected_fields_count != 0) classlibFillInInjectedFields(classblock->name, classblock->fields);
+//    if (injected_fields_count != 0) classlibFillInInjectedFields(classblock->name, classblock->fields);
 
-    for (i = injected_fields_count; i < classblock->fields_count; i++) {
+//    for (i = injected_fields_count; i < classblock->fields_count; i++) {
+    for (i = 0; i < classblock->fields_count; i++) {
         FieldBlock *field = &classblock->fields[i];
         u2 name_idx, type_idx;
 
@@ -414,13 +442,13 @@ Class *parseClass(char *classname, char *data, int offset, int len,
         field->signature = NULL;
         field->constant = 0;
 
-        for (j = 0; j < injected_fields_count; j++)
-            if (field->name == classblock->fields[j].name) {
-                jam_fprintf(stderr, "Classlib mismatch: injected field "
-                                    "\"%s\" already present in %s\n",
-                            field->name, classblock->name);
-                exitVM(1);
-            }
+//        for (j = 0; j < injected_fields_count; j++)
+//            if (field->name == classblock->fields[j].name) {
+//                jam_fprintf(stderr, "Classlib mismatch: injected field "
+//                                    "\"%s\" already present in %s\n",
+//                            field->name, classblock->name);
+//                exitVM(1);
+//            }
 
         READ_U2(attr_count, ptr, len);
         for (; attr_count != 0; attr_count--) {
@@ -433,6 +461,7 @@ Class *parseClass(char *classname, char *data, int offset, int len,
             attr_name = CP_UTF8(constant_pool, attr_name_idx);
             READ_U4(attr_length, ptr, len);
 
+            // static final xx = y ; 这种代码编译得到？
             if (attr_name == SYMBOL(ConstantValue)) {
                 READ_INDEX(classblock->fields[i].constant, ptr, len);
 
@@ -458,7 +487,9 @@ Class *parseClass(char *classname, char *data, int offset, int len,
                 ptr += attr_length;
         }
     }
+    // END 字段
 
+    // 方法
     READ_U2(classblock->methods_count, ptr, len);
     classblock->methods = sysMalloc(classblock->methods_count *
                                     sizeof(MethodBlock));
@@ -594,7 +625,9 @@ Class *parseClass(char *classname, char *data, int offset, int len,
                 ptr += attr_length;
         }
     }
+    // END 方法
 
+    // 类级别属性
     READ_U2(attr_count, ptr, len);
     for (; attr_count != 0; attr_count--) {
         u2 attr_name_idx;
@@ -709,6 +742,8 @@ Class *parseClass(char *classname, char *data, int offset, int len,
         } else
             ptr += attr_length;
     }
+    // END 类属性
+    // class 文件读取结束
 
     for (i = 0; i < sizeof(ExtraAttributes) / sizeof(void *)
                 && extra_attributes.data[i] == NULL; i++);
@@ -719,12 +754,14 @@ Class *parseClass(char *classname, char *data, int offset, int len,
                sizeof(ExtraAttributes));
     }
 
+    // 解析父类
     if (super_idx) {
         classblock->super = resolveClass(class, super_idx, FALSE, FALSE);
         if (exceptionOccurred())
             return NULL;
     }
 
+    // 标记类为 LOADED
     classblock->state = CLASS_LOADED;
     return class;
 }
@@ -732,11 +769,14 @@ Class *parseClass(char *classname, char *data, int offset, int len,
 Class *defineClass(char *classname, char *data, int offset, int len,
                    Object *class_loader) {
 
+    // 准备 class, 主要就是从 classsfile 的二进制数组到 class 实例。
     Class *class = parseClass(classname, data, offset, len, class_loader);
 
     if (class != NULL) {
+        // class_loader 级别的类缓存
         Class *found = addClassToHash(class, class_loader);
 
+        // 重复加载了
         if (found != class) {
             CLASS_CB(class)->flags = CLASS_CLASH;
             if (class_loader != NULL) {
@@ -877,16 +917,21 @@ void prepareFields(Class *class) {
     RefsOffsetsEntry *spr_rfs_offsts_tbl = NULL;
     int spr_rfs_offsts_sze = 0;
 
+    // 引用类型字段
     FieldBlock *ref_head = NULL;
+    // int 类型 -> 32 bit
     FieldBlock *int_head = NULL;
+    // double 类型 -> 64 bit
     FieldBlock *dbl_head = NULL;
 
+    // 最小情况下， lock + class 指针 -> 8 + 8 -> 16 b
     int field_offset = sizeof(Object);
     int refs_start_offset = 0;
     int refs_end_offset = 0;
     int i;
 
     if (super != NULL) {
+        // 如果有父类，那么当前实例的大小起始值就是父类实例的大小。
         field_offset = CLASS_CB(super)->object_size;
         spr_rfs_offsts_sze = CLASS_CB(super)->refs_offsets_size;
         spr_rfs_offsts_tbl = CLASS_CB(super)->refs_offsets_table;
@@ -897,25 +942,28 @@ void prepareFields(Class *class) {
        int-sized fields, double-sized fields and reference
        fields */
 
+    // 1. 静态字段赋初始值
+    // 2. 字段按类型存储到三个链表
     for (i = 0; i < cb->fields_count; i++) {
         FieldBlock *fb = &cb->fields[i];
 
-        if (fb->access_flags & ACC_STATIC)
+        if (fb->access_flags & ACC_STATIC) {
+            jam_printf("xxxx, %s %s %s\n", cb->name, fb->name, fb->type);
             fb->u.static_value.l = 0;
-        else {
+        } else {
             FieldBlock **list;
 
-            if (fb->type[0] == 'L' || fb->type[0] == '[')
+            if (fb->type[0] == 'L' || fb->type[0] == '[') // ref
                 list = &ref_head;
-            else if (fb->type[0] == 'J' || fb->type[0] == 'D')
+            else if (fb->type[0] == 'J' || fb->type[0] == 'D') // long or double
                 list = &dbl_head;
             else
-                list = &int_head;
+                list = &int_head; // int, 或者说，int ,short ,byte, char 等即使占用小于 32bit，在此处实现里均按照 32bit 来计算。
 
             fb->u.static_value.p = *list;
             *list = fb;
         }
-
+        // 字段关联所属类
         fb->class = class;
     }
 
@@ -924,7 +972,9 @@ void prepareFields(Class *class) {
        a hole if no int-fields */
 
     if (dbl_head != NULL) {
+        // 不够 8 字节 ，则插入一个 4 字节的 int , 但什么时候会不够？
         if (field_offset & 0x7) {
+            // dead code
             if (int_head != NULL) {
                 FieldBlock *fb = int_head;
                 int_head = int_head->u.static_value.p;
@@ -946,7 +996,10 @@ void prepareFields(Class *class) {
        a hole if no int-fields remaining */
 
     if (ref_head != NULL) {
+        // sizeof(Object *) 在 64 位架构下为 8 ， =》 size(Object *) == 8 为 true
+        // 又一次不够 8 字节补 int 4 字节
         if (sizeof(Object *) == 8 && field_offset & 0x7) {
+            // dead code
             if (int_head != NULL) {
                 FieldBlock *fb = int_head;
                 int_head = int_head->u.static_value.p;
@@ -975,7 +1028,7 @@ void prepareFields(Class *class) {
         fb->u.offset = field_offset;
         field_offset += 4;
     }
-
+    // 当前类实例的内存占用大小
     cb->object_size = field_offset;
 
     /* Construct the reference offsets list.  This is used to speed up
@@ -1019,6 +1072,7 @@ int hideFieldFromGC(FieldBlock *hidden) {
     return hidden->u.offset = cb->object_size - sizeof(Object *);
 }
 
+// 强行内联 😂
 #define fillinMTable(method_table, methods, methods_count)              \
 {                                                                       \
     int i;                                                              \
@@ -1042,6 +1096,10 @@ typedef struct miranda {
     int default_conflict;
 } Miranda;
 
+// 链接过程
+// 1. 继承字段的整合
+// 2. 计算 object size
+// 3. 继承方法的整合
 void linkClass(Class *class) {
     static MethodBlock *obj_fnlzr_mthd = NULL;
 
@@ -1066,8 +1124,9 @@ void linkClass(Class *class) {
     if (cb->state >= CLASS_LINKED)
         return;
 
+    // 防止并发 link
     objectLock(class);
-
+    // 双重校验
     if (cb->state >= CLASS_LINKED)
         goto unlock;
 
@@ -1077,6 +1136,7 @@ void linkClass(Class *class) {
     if (super) {
         ClassBlock *super_cb = CLASS_CB(super);
         if (super_cb->state < CLASS_LINKED)
+            // 递归优先链接父类
             linkClass(super);
 
         spr_flags = super_cb->flags;
@@ -1096,26 +1156,34 @@ void linkClass(Class *class) {
         char *sig = mb->type;
 
         /* calculate argument count from signature */
+        // double , long -> 2 slot
+        // others -> 1 slot
         SCAN_SIG(sig, count += 2, count++);
 
+        // 如果是静态方法，方法参数长度为方法签名的参数长度
+        // 如果是实例方法，方法参数长度为方法签名的参数长度 + 1, 多的一个参数为 this 变量, 即方法调用时的当前实例的引用。
         if (mb->access_flags & ACC_STATIC)
             mb->args_count = count;
         else
             mb->args_count = count + 1;
 
+        // 关联所属 class , 反射逻辑需要使用。
         mb->class = class;
 
         /* Set abstract method to stub */
+        // 抽象方法无方法体，此处提前占位
         if (mb->access_flags & ACC_ABSTRACT) {
             mb->code_size = sizeof(abstract_method);
             mb->code = abstract_method;
         }
 
+        // 本地方法
         if (mb->access_flags & ACC_NATIVE) {
 
             /* set up native invoker to wrapper to resolve function
                on first invocation */
-
+            // 函数指针，指向一个包装函数，在运行时，通过该函数得到动态绑定的本地函数指针（本地函数或者 dll）
+            // 实现巧妙，resoveNativeWrapper 的方法签名和需要关联的本地方法的方法签名一致。
             mb->native_invoker = &resolveNativeWrapper;
 
             /* native methods have no code attribute so these aren't filled
@@ -1123,12 +1191,14 @@ void linkClass(Class *class) {
                set to appropriate values */
 
             mb->max_locals = mb->args_count;
+            // 本地方法不用分配操作数栈
             mb->max_stack = 0;
         }
 
         /* Static, private or init methods aren't dynamically invoked, so
           don't stick them in the table to save space */
 
+        // 静态，私有，或构造方法
         if ((mb->access_flags & (ACC_STATIC | ACC_PRIVATE)) ||
             (mb->name[0] == '<'))
             continue;
@@ -1139,16 +1209,18 @@ void linkClass(Class *class) {
             if (mb->name == spr_mthd_tbl[j]->name &&
                 mb->type == spr_mthd_tbl[j]->type &&
                 checkMethodAccess(spr_mthd_tbl[j], class)) {
+                // 注意这个 method_table_index, 在构建当前实例的方法表时，通过该字段覆盖了继承的方法
                 mb->method_table_index = spr_mthd_tbl[j]->method_table_index;
                 break;
             }
 
+        // 意味着非复写方法，是新方法
         if (j == spr_mthd_tbl_sze)
             mb->method_table_index = spr_mthd_tbl_sze + new_methods_count++;
     }
 
     /* construct method table */
-
+    // 当前实例的方法表，当前类方法和继承的方法
     method_table_size = spr_mthd_tbl_sze + new_methods_count;
 
     if (!(cb->access_flags & ACC_INTERFACE)) {
@@ -1163,13 +1235,17 @@ void linkClass(Class *class) {
         mb = cb->methods;
         fillinMTable(method_table, mb, cb->methods_count);
     }
+    // end
 
+    // 当前类的接口在 link 当前类时已经 link 过了
     /* setup interface method table */
 
     /* number of interfaces implemented by this class is those implemented by
      * parent, plus number of interfaces directly implemented by this class,
      * and the total number of their superinterfaces */
-
+    // 父类的接口数
+    // +
+    // 当前类直接实现的接口数以及这些接口的父接口数
     new_itable_count = cb->interfaces_count;
     for (i = 0; i < cb->interfaces_count; i++)
         new_itable_count += CLASS_CB(cb->interfaces[i])->imethod_table_size;
@@ -1401,6 +1477,7 @@ void linkClass(Class *class) {
 
     cb->method_table = method_table;
     cb->method_table_size = method_table_size;
+    // end interfaces methods merge
 
     /* Handle finalizer */
 
@@ -1637,6 +1714,7 @@ void defineBootPackage(char *classname, int index) {
     }
 }
 
+// 加载系统类
 Class *loadSystemClass(char *classname) {
     int file_len, fname_len = strlen(classname) + 8;
     char buff[max_cp_element_len + fname_len];
@@ -1649,10 +1727,12 @@ Class *loadSystemClass(char *classname) {
     strcat(strcpy(&filename[1], classname), ".class");
 
     for (i = 0; i < bcp_entries && data == NULL; i++)
+        // 从 zip 中加载
         if (bootclasspath[i].zip)
             data = findArchiveEntry(filename + 1, bootclasspath[i].zip,
                                     &file_len);
         else
+            // 从目录中加载
             data = findFileEntry(strcat(strcpy(buff, bootclasspath[i].path),
                                         filename), &file_len);
 

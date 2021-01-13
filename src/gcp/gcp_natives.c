@@ -19,10 +19,6 @@
  * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifdef NO_JNI
-#error to use classpath, Jam must be compiled with JNI!
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

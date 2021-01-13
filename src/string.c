@@ -40,15 +40,10 @@ static Class *string_class;
 static int value_offset;
 static int count_offset;
 
-#ifdef SHARED_CHAR_BUFFERS
 static int count_offset;
 static int offset_offset;
 #define STRING_LEN(string) INST_DATA(string, int, count_offset)
 #define STRING_OFFSET(string) INST_DATA(string, int, offset_offset)
-#else
-#define STRING_LEN(string) ARRAY_LEN(INST_DATA(string, Object*, value_offset))
-#define STRING_OFFSET(string) 0
-#endif
 
 int stringHash(Object *ptr) {
     int len = STRING_LEN(ptr);
@@ -97,9 +92,7 @@ Object *createString(char *utf8) {
     data = ARRAY_DATA(array, unsigned short);
     convertUtf8(utf8, data);
 
-#ifdef SHARED_CHAR_BUFFERS
     INST_DATA(ob, int, count_offset) = len;
-#endif
     INST_DATA(ob, Object*, value_offset) = array;
 
     return ob;
@@ -192,7 +185,6 @@ int initialiseString() {
     registerStaticClassRef(&string_class);
     value_offset = value->u.offset;
 
-#ifdef SHARED_CHAR_BUFFERS
     {
         FieldBlock *count = findField(string_class, SYMBOL(count), SYMBOL(I));
         FieldBlock *offset = findField(string_class, SYMBOL(offset),
@@ -204,7 +196,6 @@ int initialiseString() {
         count_offset = count->u.offset;
         offset_offset = offset->u.offset;
     }
-#endif
 
     /* Init hash table and create lock */
     initHashTable(hash_table, HASHTABSZE, TRUE);
@@ -216,9 +207,7 @@ int initialiseString() {
     return FALSE;
 }
 
-#ifndef NO_JNI
 /* Functions used by JNI */
-
 Object *createStringFromUnicode(unsigned short *unicode, int len) {
     Object *array = allocTypeArray(T_CHAR, len);
     Object *ob = allocObject(string_class);
@@ -227,9 +216,7 @@ Object *createStringFromUnicode(unsigned short *unicode, int len) {
         unsigned short *data = ARRAY_DATA(array, unsigned short);
         memcpy(data, unicode, len * sizeof(unsigned short));
 
-#ifdef SHARED_CHAR_BUFFERS
         INST_DATA(ob, int, count_offset) = len;
-#endif
         INST_DATA(ob, Object*, value_offset) = array;
 
         return ob;
@@ -266,4 +253,3 @@ char *String2Utf8(Object *string) {
 
     return unicode2Utf8(unicode, len, utf8);
 }
-#endif

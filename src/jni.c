@@ -19,7 +19,6 @@
  * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef NO_JNI
 #include <string.h>
 #include <stdlib.h>
 #include "jni.h"
@@ -1639,5 +1638,4 @@ jint JNI_GetCreatedJavaVMs(JavaVM **buff, jsize buff_len, jsize *num) {
 void *getJNIInterface() {
     return &Jam_JNINativeInterface;
 }
-#endif
 

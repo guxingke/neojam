@@ -1890,6 +1890,11 @@ void *gcMalloc(int len) {
        and are visible to other threads */
     static enum { gc, run_finalizers, throw_oom } state = gc;
 
+    // len + 8 (HEADER_SIZE) ，后按 8 字节对齐
+    // e.g len = 224 => (224 + 8 + 7) & ~(8-1)
+    // -> 239 & ~7  // ~7 // 0000 0111  ~ -> 1111 1000 -> -8
+    // -> 239 & -8  // 1110 1111 & 1111 1000 = > 1110 1000
+    // -> 232
     int n = (len+HEADER_SIZE+OBJECT_GRAIN-1)&~(OBJECT_GRAIN-1);
     uintptr_t largest;
     Chunk *found;
@@ -2113,6 +2118,10 @@ Object *allocObject(Class *class) {
     return ob;
 }
 
+// 实例数组分配
+// | HEADER 8B          | OBJECT     | ARRAY  8B + x                   |
+// | 8B                 | object 16B | 8B      | x B (elements size) |
+//                      |  <-- 返回的指针位置
 Object *allocArray(Class *class, int size, int el_size) {
     Object *ob;
 
@@ -2152,6 +2161,7 @@ Object *allocObjectArray(Class *element_class, int length) {
     return NULL;
 }
 
+// 基本类型数组分配
 Object *allocTypeArray(int type, int size) {
     static char *array_names[] = {"[Z", "[C", "[F", "[D", "[B",
                                   "[S", "[I", "[J"};
@@ -2208,6 +2218,9 @@ Object *allocMultiArray(Class *array_class, int dim, intptr_t *count) {
 }
 
 Class *allocClass() {
+    // 实际分配的空间是多大？
+    // 1. sizeof(ClassBlock) + sizeOf(Class)
+    // 2. gcMalloc 内部有一些特殊的逻辑, header size 和 对齐
     Class *class = gcMalloc(sizeof(ClassBlock)+sizeof(Class));
 
     if(class != NULL) {

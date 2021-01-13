@@ -70,8 +70,8 @@ extern void classlibNewLibraryUnloader(Object *class_loader, void *entry);
 #define classlibSkipReflectionLoader(loader) \
     loader
 
-#define classlibInjectedFieldsCount(classname) 0
-#define classlibFillInInjectedFields(classname, field) {}
+//#define classlibInjectedFieldsCount(classname) 0
+//#define classlibFillInInjectedFields(classname, field) {}
 
 #define classlibExternalClassName(class) \
     slash2DotsDup(CLASS_CB(class)->name);

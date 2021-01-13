@@ -26,7 +26,6 @@
 
 #include "jam.h"
 
-#ifndef NO_JNI
 #include "hash.h"
 #include "natives.h"
 #include "symbol.h"
@@ -52,10 +51,9 @@ extern uintptr_t *callJNIMethod(void *env, Class *class, char *sig, int extra,
 extern void *jni_env;
 extern JavaVM jni_invoke_intf;
 
-#define HASHTABSZE 1<<4
+#define HASHTABSZE 1<<4 // 16
 static HashTable hash_table;
 NativeMethod lookupLoadedDlls(MethodBlock *mb);
-#endif
 
 /* Trace library loading and method lookup */
 #ifdef TRACEDLL
@@ -207,10 +205,8 @@ NativeMethod resolveNativeMethod(MethodBlock *mb) {
     /* First see if it's an internal native method */
     method = lookupInternal(mb);
 
-#ifndef NO_JNI
     if(method == NULL)
         method = lookupLoadedDlls(mb);
-#endif
 
     if(verbose)
         jam_printf("]\n");
@@ -232,7 +228,6 @@ uintptr_t *resolveNativeWrapper(Class *class, MethodBlock *mb,
 }
 
 int initialiseDll(InitArgs *args) {
-#ifndef NO_JNI
     /* Init hash table, and create lock */
     initHashTable(hash_table, HASHTABSZE, TRUE);
 
@@ -243,7 +238,6 @@ int initialiseDll(InitArgs *args) {
             return FALSE;
         }
     }
-#endif
 
     /* Set the boot path */
 
@@ -291,7 +285,6 @@ void shutdownDll() {
 #endif
 }
 
-#ifndef NO_JNI
 typedef struct {
     char *name;
     void *handle;
@@ -647,5 +640,4 @@ NativeMethod lookupLoadedDlls(MethodBlock *mb) {
 
     return NULL;
 }
-#endif
 

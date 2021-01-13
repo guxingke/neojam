@@ -46,12 +46,15 @@ MethodBlock *lookupMethod(Class *class, char *methodname, char *type) {
     }
 #endif
 
+    // 在当前类寻找
     if ((mb = findMethod(class, methodname, type)))
         return mb;
 
+    // 当前类没找到，去父类找
     if (CLASS_CB(class)->super)
         return lookupMethod(CLASS_CB(class)->super, methodname, type);
 
+    // 没找到
     return NULL;
 }
 

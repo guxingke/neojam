@@ -237,6 +237,8 @@ extern char *symbol_values[];
     action(_java_lang_String__java_lang_Class, "(Ljava/lang/String;)Ljava/lang/Class;")
 
 #define SYMBOL_ENUM(name, value) SYMBOL_NAME_ENUM(name)
+
+// 枚举实际就是从 0 开始的一堆常量
 enum {
     CLASSLIB_SYMBOLS_DO(SYMBOL_ENUM),
     SYMBOLS_DO(SYMBOL_ENUM),

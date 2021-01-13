@@ -6,6 +6,9 @@
    are in big endian format, and non-aligned.  See arch.h
    for READ_DBL - this is platform dependent */
 
+// #define READ_U1(v, p, l)  v = *p; p++
+// #define READ_U1(v, p, l)  v = p[0]; p++
+// 对等
 #define READ_U1(v, p, l)  v = *(p)++
 #define READ_U2(v, p, l)  v = ((p)[0]<<8)|(p)[1]; (p)+=2
 #define READ_U4(v, p, l)  v = ((p)[0]<<24)|((p)[1]<<16)|((p)[2]<<8)|(p)[3]; (p)+=4

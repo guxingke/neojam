@@ -225,6 +225,7 @@ int main(int argc, char *argv[]) {
 
     args.main_stack_base = &array_class;
 
+    // 初始化虚拟机，多个组件的初始化
     if (!initVM(&args)) {
         printf("Could not initialise VM.  Aborting.\n");
         exit(1);
