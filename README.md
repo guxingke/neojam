@@ -5,7 +5,7 @@
 配合 [GNU Classpath](https://www.gnu.org/software/classpath/) 作个人研究之用。
 
 
-# 编译
+# 编译(依次编译安装）
 
 前置条件, 安装 `Xcode` 或者 `Command Line Tools`。
 
