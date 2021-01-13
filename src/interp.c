@@ -2894,12 +2894,12 @@ uintptr_t *executeJava() {
             }
 
             methodReturn:
-
+                /* Set interpreter state to previous frame */
                 frame = frame->prev;
 
-                if (frame->mb == ((void *) 0)) {
-
-
+                if (frame->mb == NULL) {
+                    /* The previous frame is a dummy frame - this indicates
+                       top of this Java invocation. */
                     return ostack;
                 }
 

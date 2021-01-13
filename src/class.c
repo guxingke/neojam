@@ -948,7 +948,7 @@ void prepareFields(Class *class) {
         FieldBlock *fb = &cb->fields[i];
 
         if (fb->access_flags & ACC_STATIC) {
-            jam_printf("xxxx, %s %s %s\n", cb->name, fb->name, fb->type);
+//            jam_printf("xxxx, %s %s %s\n", cb->name, fb->name, fb->type);
             fb->u.static_value.l = 0;
         } else {
             FieldBlock **list;
@@ -1552,6 +1552,7 @@ void linkClass(Class *class) {
     objectUnlock(class);
 }
 
+// 类初始化
 Class *initClass(Class *class) {
     ClassBlock *cb = CLASS_CB(class);
     ConstantPool *cp = &cb->constant_pool;
@@ -1566,7 +1567,9 @@ Class *initClass(Class *class) {
     linkClass(class);
     objectLock(class);
 
+    // 并发竞争
     while (cb->state == CLASS_INITING)
+        // 是当前线程?
         if (cb->initing_tid == threadSelf()->id) {
             objectUnlock(class);
             return class;
@@ -1575,25 +1578,32 @@ Class *initClass(Class *class) {
                An interrupt will appear as if the initialiser
                failed (below), and clearing will lose the
                interrupt status */
+            // 无限时不可中断等待, 直到其他线程初始化唤醒当前线程为止
             objectWait(class, 0, 0, FALSE);
         }
 
+    // 二次校验
     if (cb->state >= CLASS_INITED) {
         objectUnlock(class);
         return class;
     }
 
+    // 类初始化出错
     if (cb->state == CLASS_BAD) {
         objectUnlock(class);
         signalException(java_lang_NoClassDefFoundError, cb->name);
         return NULL;
     }
 
+    // 标记为类初始化中
     cb->state = CLASS_INITING;
+    // 关联当前线程 id
     cb->initing_tid = threadSelf()->id;
 
+    // 在这里就释放了锁，会有问题吗？
     objectUnlock(class);
 
+    // 非接口，并且有父类，且父类状态不为已类初始化, 则进行父类的初始化
     if (!(cb->access_flags & ACC_INTERFACE) && cb->super
         && (CLASS_CB(cb->super)->state != CLASS_INITED)) {
         initClass(cb->super);
@@ -1616,6 +1626,7 @@ Class *initClass(Class *class) {
                 fb->u.static_value.u = resolveSingleConstant(class, fb->constant);
         }
 
+    // 类初始化方法, 定位和执行
     if ((mb = findMethod(class, SYMBOL(class_init), SYMBOL(___V))) != NULL) {
 //        jam_printf("clinit %s\n", cb->name);
         executeStaticMethod(class, mb);

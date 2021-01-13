@@ -248,6 +248,7 @@ int main(int argc, char *argv[]) {
     if (exceptionOccurred())
         goto error;
 
+    // 定位主方法
     mb = lookupMethod(main_class, SYMBOL(main),
                       SYMBOL(_array_java_lang_String__V));
 
@@ -259,6 +260,7 @@ int main(int argc, char *argv[]) {
     /* Create the String array holding the command line args */
 
     i = class_arg + 1;
+    // 准备参数 String[] args
     if ((array_class = findArrayClass(SYMBOL(array_java_lang_String))) &&
         (array = allocArray(array_class, argc - i, sizeof(Object *)))) {
         Object **args = ARRAY_DATA(array, Object*) - i;

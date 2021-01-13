@@ -127,6 +127,7 @@ void *executeMethodList(Object *ob, Class *class, MethodBlock *mb, u8 *jargs) {
     uintptr_t *sp;
     void *ret;
 
+    // 强制内联
     CREATE_TOP_FRAME(ee, class, mb, sp, ret);
 
     /* copy args onto stack */
