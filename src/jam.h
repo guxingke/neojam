@@ -701,11 +701,17 @@ typedef struct classblock {
     CLASSLIB_CLASS_EXTRA_FIELDS
 } ClassBlock;
 
+// 操作舒展
 typedef struct frame {
+    // 字节码
     CodePntr last_pc;
+    // 本地变量表
     uintptr_t *lvars;
+    // 操作数栈
     uintptr_t *ostack;
+    // 方法体
     MethodBlock *mb;
+    // 上个栈, 构成单链表
     struct frame *prev;
 } Frame;
 

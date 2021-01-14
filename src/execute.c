@@ -90,7 +90,50 @@ void *executeMethodVaList(Object *ob, Class *class, MethodBlock *mb,
     uintptr_t *sp;
     void *ret;
 
-    CREATE_TOP_FRAME(ee, class, mb, sp, ret);
+
+//    CREATE_TOP_FRAME(ee, class, mb, sp, ret);
+    // 手动宏展开
+    {
+        // 以 main 方法的调用为例，栈在内存的布局如下
+        // last -> mb -> max_stack = 0 , mb -> max_stack = 3 , mb -> max_locals = 1
+        // | last | dummy | new |
+        Frame *last = ee->last_frame;
+        Frame *dummy = (Frame *) (last->ostack + last->mb->max_stack);
+        Frame *new_frame;
+        uintptr_t *new_ostack;
+
+        ret = (void *) (sp = (uintptr_t *) (dummy + 1));
+        new_frame = (Frame *) (sp + mb->max_locals);
+        // 8 字节对齐
+        new_ostack = ALIGN_OSTACK(new_frame + 1);
+
+        if ((char *) (new_ostack + mb->max_stack) > ee->stack_end) {
+            if (ee->overflow++) {
+                /* Overflow when we're already throwing stack
+                   overflow.  Stack extension should be enough
+                   to throw exception, so something's seriously
+                   gone wrong - abort the VM! */
+                printf("Fatal stack overflow!  Aborting VM.\n");
+                exitVM(1);
+            }
+            ee->stack_end += STACK_RED_ZONE_SIZE;
+            signalException(java_lang_StackOverflowError, NULL);
+            return NULL;
+        }
+
+        dummy->mb = NULL;
+        // 这个 dummy -> ostack = sp 赋值了，但似乎没啥用
+        dummy->ostack = sp;
+        dummy->prev = last;
+
+        new_frame->mb = mb;
+        new_frame->lvars = sp;
+        new_frame->ostack = new_ostack;
+
+        new_frame->prev = dummy;
+        ee->last_frame = new_frame;
+    }
+    // END
 
     /* copy args onto stack */
 

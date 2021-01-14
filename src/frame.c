@@ -24,6 +24,7 @@
 #include "class.h"
 #include "thread.h"
 #include "classlib.h"
+#include "frame.h"
 
 int initialiseFrame() {
     if(!classlibInitialiseFrame()) {
@@ -91,4 +92,3 @@ Object *firstNonNullClassLoader() {
 
     return NULL;
 }
-
