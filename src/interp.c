@@ -46,7 +46,7 @@ uintptr_t *executeJava() {
                 jam_fprintf(__stdoutp, "Unrecognised opcode %d in: %s.%s\n", *pc,
                             ((ClassBlock *) (mb->class + 1))->name, mb->name);
                 exitVM(1);
-            case 2: {
+            case OPC_ICONST_M1: {
                 uintptr_t tos = -1;
                 *ostack++ = tos;
                 {
@@ -54,9 +54,9 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 3:
-            case 11:
-            case 1: {
+            case OPC_ICONST_0:
+            case OPC_FCONST_0:
+            case OPC_ACONST_NULL: {
                 uintptr_t tos = 0;
                 *ostack++ = tos;
                 {
@@ -64,7 +64,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 4: {
+            case OPC_ICONST_1: {
                 uintptr_t tos = 1;
                 *ostack++ = tos;
                 {
@@ -72,7 +72,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 5: {
+            case OPC_ICONST_2: {
                 uintptr_t tos = 2;
                 *ostack++ = tos;
                 {
@@ -80,7 +80,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 6: {
+            case OPC_ICONST_3: {
                 uintptr_t tos = 3;
                 *ostack++ = tos;
                 {
@@ -88,7 +88,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 7: {
+            case OPC_ICONST_4: {
                 uintptr_t tos = 4;
                 *ostack++ = tos;
                 {
@@ -96,7 +96,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 8: {
+            case OPC_ICONST_5: {
                 uintptr_t tos = 5;
                 *ostack++ = tos;
                 {
@@ -104,7 +104,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 12: {
+            case OPC_FCONST_1: {
                 uintptr_t tos = 0x3f800000;
                 *ostack++ = tos;
                 {
@@ -112,7 +112,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 13: {
+            case OPC_FCONST_2: {
                 uintptr_t tos = 0x40000000;
                 *ostack++ = tos;
                 {
@@ -120,7 +120,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 17: {
+            case OPC_SIPUSH: {
                 uintptr_t tos = (signed short) (((pc)[1] << 8) | (pc)[2]);
                 *ostack++ = tos;
                 {
@@ -128,7 +128,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 16: {
+            case OPC_BIPUSH: {
                 uintptr_t tos = (signed char) ((pc)[1]);
                 *ostack++ = tos;
                 {
@@ -136,7 +136,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 203: {
+            case OPC_LDC_QUICK: {
                 uintptr_t tos = cp->info[((pc)[1])];
                 *ostack++ = tos;
                 {
@@ -144,7 +144,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 204: {
+            case OPC_LDC_W_QUICK: {
                 uintptr_t tos = cp->info[(((pc)[1] << 8) | (pc)[2])];
                 *ostack++ = tos;
                 {
@@ -152,9 +152,9 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 21:
-            case 23:
-            case 25: {
+            case OPC_ILOAD:
+            case OPC_FLOAD:
+            case OPC_ALOAD: {
                 uintptr_t tos = lvars[((pc)[1])];
                 *ostack++ = tos;
                 {
@@ -162,7 +162,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 231:
+            case OPC_ALOAD_THIS:
                 if (pc[1] != 180) {
                     int opcode;
                     if (pc[1] == 206) opcode = 229; else if (pc[1] == 217) opcode = 221; else opcode = 26;
@@ -172,8 +172,8 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };
-            case 26:
-            case 34: {
+            case OPC_ILOAD_0:
+            case OPC_FLOAD_0: {
                 uintptr_t tos = lvars[0];
                 *ostack++ = tos;
                 {
@@ -181,9 +181,9 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 27:
-            case 35:
-            case 43: {
+            case OPC_ILOAD_1:
+            case OPC_FLOAD_1:
+            case OPC_ALOAD_1: {
                 uintptr_t tos = lvars[1];
                 *ostack++ = tos;
                 {
@@ -191,9 +191,9 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 28:
-            case 36:
-            case 44: {
+            case OPC_ILOAD_2:
+            case OPC_FLOAD_2:
+            case OPC_ALOAD_2: {
                 uintptr_t tos = lvars[2];
                 *ostack++ = tos;
                 {
@@ -201,9 +201,9 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 29:
-            case 37:
-            case 45: {
+            case OPC_ILOAD_3:
+            case OPC_FLOAD_3:
+            case OPC_ALOAD_3: {
                 uintptr_t tos = lvars[3];
                 *ostack++ = tos;
                 {
@@ -211,47 +211,47 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 54:
-            case 56:
-            case 58:
+            case OPC_ISTORE:
+            case OPC_FSTORE:
+            case OPC_ASTORE:
                 lvars[((pc)[1])] = *--ostack;
                 {
                     pc += 2;
                     break;
                 };;
-            case 59:
-            case 75:
-            case 67:
+            case OPC_ISTORE_0:
+            case OPC_ASTORE_0:
+            case OPC_FSTORE_0:
                 lvars[0] = *--ostack;
                 {
                     pc += 1;
                     break;
                 };;
-            case 60:
-            case 76:
-            case 68:
+            case OPC_ISTORE_1:
+            case OPC_ASTORE_1:
+            case OPC_FSTORE_1:
                 lvars[1] = *--ostack;
                 {
                     pc += 1;
                     break;
                 };;
-            case 61:
-            case 77:
-            case 69:
+            case OPC_ISTORE_2:
+            case OPC_ASTORE_2:
+            case OPC_FSTORE_2:
                 lvars[2] = *--ostack;
                 {
                     pc += 1;
                     break;
                 };;
-            case 62:
-            case 78:
-            case 70:
+            case OPC_ISTORE_3:
+            case OPC_ASTORE_3:
+            case OPC_FSTORE_3:
                 lvars[3] = *--ostack;
                 {
                     pc += 1;
                     break;
                 };;
-            case 96:
+            case OPC_IADD:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] + (int) ostack[1];
@@ -261,7 +261,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 100:
+            case OPC_ISUB:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] - (int) ostack[1];
@@ -271,7 +271,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 104:
+            case OPC_IMUL:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] * (int) ostack[1];
@@ -281,7 +281,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 108:
+            case OPC_IDIV:
                 if ((int) ostack[-1] == 0) {
                     frame->last_pc = pc;
                     signalChainedExceptionEnum(exception_java_lang_ArithmeticException, "division by zero",
@@ -301,7 +301,7 @@ uintptr_t *executeJava() {
                         };
                     };
                 };;
-            case 112:
+            case OPC_IREM:
                 if ((int) ostack[-1] == 0) {
                     frame->last_pc = pc;
                     signalChainedExceptionEnum(exception_java_lang_ArithmeticException, "division by zero",
@@ -321,7 +321,7 @@ uintptr_t *executeJava() {
                         };
                     };
                 };;
-            case 126:
+            case OPC_IAND:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] & (int) ostack[1];
@@ -331,7 +331,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 128:
+            case OPC_IOR:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] | (int) ostack[1];
@@ -341,7 +341,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 130:
+            case OPC_IXOR:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] ^(int) ostack[1];
@@ -351,7 +351,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 116: {
+            case OPC_INEG: {
                 uintptr_t tos = -({
                     ostack -= (sizeof(int) + 3) / 4;
                     (int) ostack[0];
@@ -362,7 +362,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };;
-            case 120:
+            case OPC_ISHL:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] << (ostack[1] & 0x1f);
@@ -372,7 +372,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 122:
+            case OPC_ISHR:
                 ostack -= 2;
                 {
                     uintptr_t tos = (int) ostack[0] >> (ostack[1] & 0x1f);
@@ -382,7 +382,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 124:
+            case OPC_IUSHR:
                 ostack -= 2;
                 {
                     uintptr_t tos = (unsigned int) ostack[0] >> (ostack[1] & 0x1f);
@@ -392,89 +392,89 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };;
-            case 159:
-            case 165:
+            case OPC_IF_ICMPEQ:
+            case OPC_IF_ACMPEQ:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] == (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 160:
-            case 166:
+            case OPC_IF_ICMPNE:
+            case OPC_IF_ACMPNE:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] != (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 161:
+            case OPC_IF_ICMPLT:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] < (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 162:
+            case OPC_IF_ICMPGE:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] >= (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 163:
+            case OPC_IF_ICMPGT:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] > (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 164:
+            case OPC_IF_ICMPLE:
                 ostack -= 2;
                 {
                     pc += ((int) ostack[0] <= (int) ostack[1]) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                     break;
                 };;
-            case 154:
-            case 199: {
+            case OPC_IFNE:
+            case OPC_IFNONNULL: {
                 pc += ((int) *--ostack != 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 153:
-            case 198: {
+            case OPC_IFEQ:
+            case OPC_IFNULL: {
                 pc += ((int) *--ostack == 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 155: {
+            case OPC_IFLT: {
                 pc += ((int) *--ostack < 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 156: {
+            case OPC_IFGE: {
                 pc += ((int) *--ostack >= 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 157: {
+            case OPC_IFGT: {
                 pc += ((int) *--ostack > 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 158: {
+            case OPC_IFLE: {
                 pc += ((int) *--ostack <= 0) ? (signed short) (((pc)[1] << 8) | (pc)[2]) : 3;
                 break;
             };;
-            case 132:
+            case OPC_IINC:
                 lvars[((pc)[1])] += (signed char) ((pc + 1)[1]);
                 {
                     pc += 3;
                     break;
                 };
-            case 87:
+            case OPC_POP:
                 ostack--;
                 {
                     pc += 1;
                     break;
                 };;
-            case 88:
+            case OPC_POP2:
                 ostack -= 2 - 0;
                 {
                     pc += 1;
                     break;
                 };
-            case 89: {
+            case OPC_DUP: {
                 uintptr_t tos = ostack[-1];
                 *ostack++ = tos;
                 {
@@ -482,14 +482,14 @@ uintptr_t *executeJava() {
                     break;
                 };
             };;
-            case 172:
-            case 176:
-            case 174:
+            case OPC_IRETURN:
+            case OPC_ARETURN:
+            case OPC_FRETURN:
                 *lvars++ = *--ostack;
                 goto methodReturn;;
-            case 177:
+            case OPC_RETURN:
                 goto methodReturn;
-            case 210: {
+            case OPC_GETSTATIC_QUICK: {
                 uintptr_t tos = *(u4 *) (((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])])->u.static_value.data);
                 *ostack++ = tos;
                 {
@@ -497,13 +497,13 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 211:
+            case OPC_PUTSTATIC_QUICK:
                 *(u4 *) (((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])])->u.static_value.data) = *--ostack;
                 {
                     pc += 3;
                     break;
                 };;
-            case 229: {
+            case OPC_GETFIELD_THIS: {
                 uintptr_t tos = *(u4 *) &((char *) this)[((pc + 1)[1])];
                 *ostack++ = tos;
                 {
@@ -511,7 +511,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 206: {
+            case OPC_GETFIELD_QUICK: {
                 Object *obj = (Object *) *--ostack;
                 if (!obj) {
                     frame->last_pc = pc;
@@ -527,7 +527,7 @@ uintptr_t *executeJava() {
                     };
                 };
             };
-            case 219: {
+            case OPC_GETSTATIC_QUICK_REF: {
                 uintptr_t tos = *(uintptr_t *) (((FieldBlock *) cp->info[(((pc)[1] << 8) |
                                                                           (pc)[2])])->u.static_value.data);
                 *ostack++ = tos;
@@ -536,13 +536,13 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 220:
+            case OPC_PUTSTATIC_QUICK_REF:
                 *(uintptr_t *) (((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])])->u.static_value.data) = *--ostack;
                 {
                     pc += 3;
                     break;
                 };;
-            case 221: {
+            case OPC_GETFIELD_THIS_REF: {
                 uintptr_t tos = *(uintptr_t *) &((char *) this)[((pc + 1)[1])];
                 *ostack++ = tos;
                 {
@@ -550,7 +550,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 217: {
+            case OPC_GETFIELD_QUICK_REF: {
                 Object *obj = (Object *) *--ostack;
                 if (!obj) {
                     frame->last_pc = pc;
@@ -568,15 +568,15 @@ uintptr_t *executeJava() {
             };;
 
 
-            case 0:
+            case OPC_NOP:
                 ({
                     {
                         pc += 1;
                         break;
                     };
                 });
-            case 9:
-            case 14:
+            case OPC_LCONST_0:
+            case OPC_DCONST_0:
                 ({
                     {
                         uint64_t val = 0;
@@ -590,7 +590,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 15:
+            case OPC_DCONST_1:
                 ({
                     {
                         uint64_t val = 0x3ff0000000000000LL;
@@ -604,7 +604,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 10:
+            case OPC_LCONST_1:
                 ({
                     {
                         uint64_t val = 1;
@@ -618,7 +618,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 20:
+            case OPC_LDC2_W:
                 ({
                     {
                         uint64_t val = *(long long *) &(cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -632,8 +632,8 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 22:
-            case 24:
+            case OPC_LLOAD:
+            case OPC_DLOAD:
                 ({
                     {
                         uint64_t val = *(u8 *) (&lvars[((pc)[1])]);
@@ -647,8 +647,8 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 30:
-            case 38:
+            case OPC_LLOAD_0:
+            case OPC_DLOAD_0:
                 ({
                     {
                         uint64_t val = *(u8 *) (&lvars[0]);
@@ -662,8 +662,8 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 31:
-            case 39:
+            case OPC_LLOAD_1:
+            case OPC_DLOAD_1:
                 ({
                     {
                         uint64_t val = *(u8 *) (&lvars[1]);
@@ -677,8 +677,8 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 32:
-            case 40:
+            case OPC_LLOAD_2:
+            case OPC_DLOAD_2:
                 ({
                     {
                         uint64_t val = *(u8 *) (&lvars[2]);
@@ -692,8 +692,8 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 33:
-            case 41:
+            case OPC_LLOAD_3:
+            case OPC_DLOAD_3:
                 ({
                     {
                         uint64_t val = *(u8 *) (&lvars[3]);
@@ -705,8 +705,8 @@ uintptr_t *executeJava() {
                         break;
                     };;
                 });
-            case 55:
-            case 57:
+            case OPC_LSTORE:
+            case OPC_DSTORE:
                 *(u8 *) (&lvars[((pc)[1])]) = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
@@ -717,8 +717,8 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 63:
-            case 71:
+            case OPC_LSTORE_0:
+            case OPC_DSTORE_0:
                 *(u8 *) (&lvars[0]) = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
@@ -729,8 +729,8 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 64:
-            case 72:
+            case OPC_LSTORE_1:
+            case OPC_DSTORE_1:
                 *(u8 *) (&lvars[1]) = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
@@ -741,8 +741,8 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 65:
-            case 73:
+            case OPC_LSTORE_2:
+            case OPC_DSTORE_2:
                 *(u8 *) (&lvars[2]) = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
@@ -753,8 +753,8 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 66:
-            case 74:
+            case OPC_LSTORE_3:
+            case OPC_DSTORE_3:
                 *(u8 *) (&lvars[3]) = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
@@ -763,8 +763,8 @@ uintptr_t *executeJava() {
                     pc += 1;
                     break;
                 };;
-            case 46:
-            case 48: {
+            case OPC_IALOAD:
+            case OPC_FALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -795,7 +795,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 50: {
+            case OPC_AALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -826,7 +826,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 51: {
+            case OPC_BALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -857,7 +857,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 52: {
+            case OPC_CALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -888,7 +888,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 53: {
+            case OPC_SALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -919,8 +919,8 @@ uintptr_t *executeJava() {
             }
 
 
-            case 47:
-            case 49: {
+            case OPC_LALOAD:
+            case OPC_DALOAD: {
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
                 if (!array) {
@@ -950,8 +950,8 @@ uintptr_t *executeJava() {
                     break;
                 };;
             }
-            case 79:
-            case 81: {
+            case OPC_IASTORE:
+            case OPC_FASTORE: {
                 int val = *--ostack;
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
@@ -980,7 +980,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 84: {
+            case OPC_BASTORE: {
                 int val = *--ostack;
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
@@ -1009,8 +1009,8 @@ uintptr_t *executeJava() {
             };
 
 
-            case 85:
-            case 86: {
+            case OPC_CASTORE:
+            case OPC_SASTORE: {
                 int val = *--ostack;
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
@@ -1039,7 +1039,7 @@ uintptr_t *executeJava() {
             };
 
 
-            case 83: {
+            case OPC_AASTORE: {
                 Object *obj = (Object *) *--ostack;
                 int idx = *--ostack;
                 Object *array = (Object *) *--ostack;
@@ -1071,8 +1071,8 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 80:
-            case 82: {
+            case OPC_LASTORE:
+            case OPC_DASTORE: {
                 int idx = ostack[-3];
                 Object *array = (Object *) ostack[-4];
                 ostack -= 4;
@@ -1099,7 +1099,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 90: {
+            case OPC_DUP_X1: {
                 uintptr_t word1 = ostack[-1];
                 uintptr_t word2 = ostack[-2];
                 ostack[-2] = word1;
@@ -1110,7 +1110,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 91: {
+            case OPC_DUP_X2: {
                 uintptr_t word1 = ostack[-1];
                 uintptr_t word2 = ostack[-2];
                 uintptr_t word3 = ostack[-3];
@@ -1123,7 +1123,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 92: {
+            case OPC_DUP2: {
                 ostack[0] = ostack[-2];
                 ostack[1] = ostack[-1];
                 ostack += 2;
@@ -1134,7 +1134,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 93: {
+            case OPC_DUP2_X1: {
                 uintptr_t word1 = ostack[-1];
                 uintptr_t word2 = ostack[-2];
                 uintptr_t word3 = ostack[-3];
@@ -1149,7 +1149,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 94: {
+            case OPC_DUP2_X2: {
                 uintptr_t word1 = ostack[-1];
                 uintptr_t word2 = ostack[-2];
                 uintptr_t word3 = ostack[-3];
@@ -1166,7 +1166,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 95: {
+            case OPC_SWAP: {
                 uintptr_t word1 = ostack[-1];
                 ostack[-1] = ostack[-2];
                 ostack[-2] = word1;
@@ -1175,7 +1175,7 @@ uintptr_t *executeJava() {
                     break;
                 }
             }
-            case 98:
+            case OPC_FADD:
                 ({
                     *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)) += *((float *) &ostack[-1] +
                                                                                   (sizeof(uintptr_t) == 8 && 0));
@@ -1187,7 +1187,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 99:
+            case OPC_DADD:
                 ({
                     *(double *) &ostack[-2 * 2] += *(double *) &ostack[-1 * 2];
                     ostack -= (sizeof(double) + 3) / 4;
@@ -1198,7 +1198,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 102:
+            case OPC_FSUB:
                 ({
                     *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)) -= *((float *) &ostack[-1] +
                                                                                   (sizeof(uintptr_t) == 8 && 0));
@@ -1210,7 +1210,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 103:
+            case OPC_DSUB:
                 ({
                     *(double *) &ostack[-2 * 2] -= *(double *) &ostack[-1 * 2];
                     ostack -= (sizeof(double) + 3) / 4;
@@ -1221,7 +1221,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 106:
+            case OPC_FMUL:
                 ({
                     *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)) *= *((float *) &ostack[-1] +
                                                                                   (sizeof(uintptr_t) == 8 && 0));
@@ -1233,7 +1233,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 107:
+            case OPC_DMUL:
                 ({
                     *(double *) &ostack[-2 * 2] *= *(double *) &ostack[-1 * 2];
                     ostack -= (sizeof(double) + 3) / 4;
@@ -1244,7 +1244,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 110:
+            case OPC_FDIV:
                 ({
                     *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)) /= *((float *) &ostack[-1] +
                                                                                   (sizeof(uintptr_t) == 8 && 0));
@@ -1256,7 +1256,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 111:
+            case OPC_DDIV:
                 ({
                     *(double *) &ostack[-2 * 2] /= *(double *) &ostack[-1 * 2];
                     ostack -= (sizeof(double) + 3) / 4;
@@ -1265,7 +1265,7 @@ uintptr_t *executeJava() {
                         break;
                     };;
                 });
-            case 97:
+            case OPC_LADD:
                 *(int64_t *) &ostack[-2 * 2] += *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
@@ -1274,7 +1274,7 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 101:
+            case OPC_LSUB:
                 *(int64_t *) &ostack[-2 * 2] -= *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
@@ -1283,7 +1283,7 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 105:
+            case OPC_LMUL:
                 *(int64_t *) &ostack[-2 * 2] *= *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
@@ -1292,7 +1292,7 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 127:
+            case OPC_LAND:
                 *(int64_t *) &ostack[-2 * 2] &= *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
@@ -1301,7 +1301,7 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 129:
+            case OPC_LOR:
                 *(int64_t *) &ostack[-2 * 2] |= *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
@@ -1310,14 +1310,14 @@ uintptr_t *executeJava() {
                 };;
 
 
-            case 131:
+            case OPC_LXOR:
                 *(int64_t *) &ostack[-2 * 2] ^= *(int64_t *) &ostack[-1 * 2];
                 ostack -= (sizeof(int64_t) + 3) / 4;
                 {
                     pc += 1;
                     break;
                 };;
-            case 109:
+            case OPC_LDIV:
                 if (*(int64_t *) &ostack[-1 * 2] == 0) {
                     frame->last_pc = pc;
                     signalChainedExceptionEnum(exception_java_lang_ArithmeticException, "division by zero",
@@ -1336,7 +1336,7 @@ uintptr_t *executeJava() {
                 };
 
 
-            case 113:
+            case OPC_LREM:
                 if (*(int64_t *) &ostack[-1 * 2] == 0) {
                     frame->last_pc = pc;
                     signalChainedExceptionEnum(exception_java_lang_ArithmeticException, "division by zero",
@@ -1353,7 +1353,7 @@ uintptr_t *executeJava() {
                         break;
                     };
                 };
-            case 121: {
+            case OPC_LSHL: {
                 int shift = *--ostack & 0x3f;
                 *(int64_t *) &ostack[-1 * 2] <<= shift;
                 {
@@ -1363,7 +1363,7 @@ uintptr_t *executeJava() {
             };
 
 
-            case 123: {
+            case OPC_LSHR: {
                 int shift = *--ostack & 0x3f;
                 *(int64_t *) &ostack[-1 * 2] >>= shift;
                 {
@@ -1373,7 +1373,7 @@ uintptr_t *executeJava() {
             };
 
 
-            case 125: {
+            case OPC_LUSHR: {
                 int shift = *--ostack & 0x3f;
                 *(uint64_t *) &ostack[-1 * 2] >>= shift;
                 {
@@ -1381,7 +1381,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             };
-            case 114:
+            case OPC_FREM:
                 ({
                     *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)) = fmod(
                             *((float *) &ostack[-2] + (sizeof(uintptr_t) == 8 && 0)),
@@ -1394,7 +1394,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 115:
+            case OPC_DREM:
                 ({
                     *(double *) &ostack[-2 * 2] = fmod(*(double *) &ostack[-2 * 2], *(double *) &ostack[-1 * 2]);
                     ostack -= (sizeof(double) + 3) / 4;
@@ -1405,7 +1405,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 118:
+            case OPC_FNEG:
                 ({
                     *((float *) &ostack[-1] + (sizeof(uintptr_t) == 8 && 0)) = -*((float *) &ostack[-1] +
                                                                                   (sizeof(uintptr_t) == 8 && 0));
@@ -1416,7 +1416,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 119:
+            case OPC_DNEG:
                 ({
                     *(double *) &ostack[-1 * 2] = -*(double *) &ostack[-1 * 2];
                     {
@@ -1426,13 +1426,13 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 117:
+            case OPC_LNEG:
                 *(int64_t *) &ostack[-1 * 2] = -*(int64_t *) &ostack[-1 * 2];
                 {
                     pc += 1;
                     break;
                 };;
-            case 136: {
+            case OPC_L2I: {
                 int64_t value = ({
                     ostack -= (sizeof(int64_t) + 3) / 4;
                     *(int64_t *) &ostack[0 * 2];
@@ -1446,7 +1446,7 @@ uintptr_t *executeJava() {
                     };
                 };
             }
-            case 134:
+            case OPC_I2F:
                 ({
                     {
                         int value = ({
@@ -1466,7 +1466,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 135:
+            case OPC_I2D:
                 ({
                     {
                         int value = ({
@@ -1486,7 +1486,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 137:
+            case OPC_L2F:
                 ({
                     {
                         int64_t value = ({
@@ -1506,7 +1506,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 138:
+            case OPC_L2D:
                 ({
                     {
                         int64_t value = ({
@@ -1526,7 +1526,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 141:
+            case OPC_F2D:
                 ({
                     {
                         float value = ({
@@ -1546,7 +1546,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 144:
+            case OPC_D2F:
                 ({
                     {
                         double value = ({
@@ -1564,7 +1564,7 @@ uintptr_t *executeJava() {
                         };
                     };
                 });
-            case 139:
+            case OPC_F2I:
                 ({
                     {
                         int res;
@@ -1587,7 +1587,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 142:
+            case OPC_D2I:
                 ({
                     {
                         int res;
@@ -1608,7 +1608,7 @@ uintptr_t *executeJava() {
                         };
                     };
                 });
-            case 140:
+            case OPC_F2L:
                 ({
                     {
                         int64_t res;
@@ -1633,7 +1633,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 143:
+            case OPC_D2L:
                 ({
                     {
                         int64_t res;
@@ -1658,7 +1658,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 133:
+            case OPC_I2L:
                 ({
                     {
                         uint64_t val = ({
@@ -1675,7 +1675,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 145:
+            case OPC_I2B:
                 ({
                     {
                         uintptr_t tos = ({
@@ -1691,7 +1691,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 146:
+            case OPC_I2C:
                 ({
                     {
                         uintptr_t tos = ({
@@ -1707,7 +1707,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 147:
+            case OPC_I2S:
                 ({
                     {
                         uintptr_t tos = ({
@@ -1723,7 +1723,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 148: {
+            case OPC_LCMP: {
                 int64_t v2 = ({
                     ostack -= (sizeof(int64_t) + 3) / 4;
                     *(int64_t *) &ostack[0 * 2];
@@ -1741,7 +1741,7 @@ uintptr_t *executeJava() {
                     };
                 };
             }
-            case 152:
+            case OPC_DCMPG:
                 ({
                     ({
                         int res;
@@ -1766,7 +1766,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 151:
+            case OPC_DCMPL:
                 ({
                     ({
                         int res;
@@ -1791,7 +1791,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 150:
+            case OPC_FCMPG:
                 ({
                     ({
                         int res;
@@ -1816,7 +1816,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 149:
+            case OPC_FCMPL:
                 ({
                     ({
                         int res;
@@ -1841,7 +1841,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 167:
+            case OPC_GOTO:
                 ({
                     ({
                         {
@@ -1851,7 +1851,7 @@ uintptr_t *executeJava() {
                     });
                 });
 
-            case 168:
+            case OPC_JSR:
                 ({
                     ({
                         *ostack++ = (uintptr_t) pc;
@@ -1863,7 +1863,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 169:
+            case OPC_RET:
                 ({
                     pc = (CodePntr) lvars[((pc)[1])];
                     {
@@ -1873,15 +1873,15 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 173:
-            case 175:
+            case OPC_LRETURN:
+            case OPC_DRETURN:
                 *(u8 *) lvars = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
                     *(uint64_t *) &ostack[0 * 2];
                 });
                 lvars += 2;
                 goto methodReturn;
-            case 190:
+            case OPC_ARRAYLENGTH:
                 ({
                     {
                         Object *array = (Object *) *--ostack;
@@ -1903,7 +1903,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 191:
+            case OPC_ATHROW:
                 ({
                     {
                         Object *obj = (Object *) ostack[-1];
@@ -1918,7 +1918,7 @@ uintptr_t *executeJava() {
                         goto throwException;
                     }
                 });
-            case 188:
+            case OPC_NEWARRAY:
                 ({
                     {
                         int type = ((pc)[1]);
@@ -1936,7 +1936,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 194:
+            case OPC_MONITORENTER:
                 ({
                     {
                         Object *obj = (Object *) *--ostack;
@@ -1955,7 +1955,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 195:
+            case OPC_MONITOREXIT:
                 ({
                     {
                         Object *obj = (Object *) *--ostack;
@@ -1972,7 +1972,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 18:
+            case OPC_LDC:
                 ({
                     {
                         frame->last_pc = pc;
@@ -1985,7 +1985,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 19:
+            case OPC_LDC_W:
                 ({
                     {
                         frame->last_pc = pc;
@@ -1998,7 +1998,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 42:
+            case OPC_ALOAD_0:
                 ({
                     {
                         if (mb->access_flags & 0x0008) pc[0] = 26; else pc[0] = 231;
@@ -2010,7 +2010,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 170:
+            case OPC_TABLESWITCH:
                 ({
                     {
                         int *aligned_pc = (int *) ((uintptr_t) (pc + 4) & ~0x3);
@@ -2042,7 +2042,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 171:
+            case OPC_LOOKUPSWITCH:
                 ({
                     {
                         int *aligned_pc = (int *) ((uintptr_t) (pc + 4) & ~0x3);
@@ -2081,7 +2081,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 178:
+            case OPC_GETSTATIC:
                 ({
                     {
                         FieldBlock *fb;
@@ -2099,7 +2099,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 179:
+            case OPC_PUTSTATIC:
                 ({
                     {
                         FieldBlock *fb;
@@ -2117,7 +2117,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 180:
+            case OPC_GETFIELD:
                 ({
                     ({
                         int idx;
@@ -2143,7 +2143,7 @@ uintptr_t *executeJava() {
                         };
                     });
                 });
-            case 181:
+            case OPC_PUTFIELD:
                 ({
                     {
                         int idx;
@@ -2169,7 +2169,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 227:
+            case OPC_GETFIELD_QUICK_W:
                 ({
                     {
                         FieldBlock *fb = ((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2213,7 +2213,7 @@ uintptr_t *executeJava() {
                         }
                     }
                 });
-            case 228: {
+            case OPC_PUTFIELD_QUICK_W: {
                 FieldBlock *fb = ((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
                 if ((*fb->type == 'J') || (*fb->type == 'D')) {
                     Object *obj = (Object *) ostack[-3];
@@ -2243,7 +2243,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 182:
+            case OPC_INVOKEVIRTUAL:
                 ({
                     {
                         int idx;
@@ -2277,7 +2277,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 226:
+            case OPC_INVOKEVIRTUAL_QUICK_W:
                 ({
                     {
                         Class *new_class;
@@ -2294,7 +2294,7 @@ uintptr_t *executeJava() {
                         goto invokeMethod;
                     }
                 });
-            case 183:
+            case OPC_INVOKESPECIAL:
                 ({
                     {
                         int idx;
@@ -2341,7 +2341,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 185:
+            case OPC_INVOKEINTERFACE:
                 ({
                     {
                         frame->last_pc = pc;
@@ -2359,7 +2359,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 189:
+            case OPC_ANEWARRAY:
                 ({
                     {
                         frame->last_pc = pc;
@@ -2372,7 +2372,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 192:
+            case OPC_CHECKCAST:
                 ({
                     {
                         frame->last_pc = pc;
@@ -2385,7 +2385,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 193:
+            case OPC_INSTANCEOF:
                 ({
                     {
                         frame->last_pc = pc;
@@ -2398,7 +2398,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 197:
+            case OPC_MULTIANEWARRAY:
                 ({
                     {
                         frame->last_pc = pc;
@@ -2412,7 +2412,7 @@ uintptr_t *executeJava() {
                     }
                 });
 
-            case 187:
+            case OPC_NEW:
                 ({
                     {
                         Class *class;
@@ -2432,7 +2432,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 196:
+            case OPC_WIDE:
                 ({
                     {
                         int opcode = pc[1];
@@ -2476,7 +2476,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 200:
+            case OPC_GOTO_W:
                 ({
                     {
                         {
@@ -2487,7 +2487,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 201:
+            case OPC_JSR_W:
                 ({
                     {
                         {
@@ -2502,7 +2502,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 230:
+            case OPC_LOCK:
                 ({
                     {
                         {
@@ -2513,7 +2513,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 212:
+            case OPC_GETSTATIC2_QUICK:
                 ({
                     {
                         FieldBlock *fb = ((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2530,7 +2530,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 213: {
+            case OPC_PUTSTATIC2_QUICK: {
                 FieldBlock *fb = ((FieldBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
                 fb->u.static_value.l = ({
                     ostack -= (sizeof(uint64_t) + 3) / 4;
@@ -2543,7 +2543,7 @@ uintptr_t *executeJava() {
             }
 
 
-            case 208:
+            case OPC_GETFIELD2_QUICK:
                 ({
                     {
                         Object *obj = (Object *) *--ostack;
@@ -2564,7 +2564,7 @@ uintptr_t *executeJava() {
                         };;
                     }
                 });
-            case 209: {
+            case OPC_PUTFIELD2_QUICK: {
                 Object *obj = (Object *) ostack[-3];
                 ostack -= 3;
                 if (!obj) {
@@ -2578,7 +2578,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 207: {
+            case OPC_PUTFIELD_QUICK: {
                 Object *obj = (Object *) ostack[-2];
                 ostack -= 2;
                 if (!obj) {
@@ -2592,7 +2592,7 @@ uintptr_t *executeJava() {
                     break;
                 };
             }
-            case 218: {
+            case OPC_PUTFIELD_QUICK_REF: {
                 Object *obj = (Object *) ostack[-2];
                 ostack -= 2;
                 if (!obj) {
@@ -2607,7 +2607,7 @@ uintptr_t *executeJava() {
                 };
             }
 
-            case 216:
+            case OPC_INVOKESUPER_QUICK:
                 ({
                     {
                         new_mb = ((ClassBlock *) (((ClassBlock *) (mb->class + 1))->super + 1))->method_table[(
@@ -2624,7 +2624,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 215:
+            case OPC_INVOKENONVIRTUAL_QUICK:
                 ({
                     {
                         new_mb = ((MethodBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2640,7 +2640,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 232:
+            case OPC_INVOKESTATIC_QUICK:
                 ({
                     {
                         new_mb = ((MethodBlock *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2650,7 +2650,7 @@ uintptr_t *executeJava() {
                 });
 
 
-            case 249:
+            case OPC_INVOKEINTERFACE_QUICK:
                 ({
                     {
                         int mtbl_idx;
@@ -2681,7 +2681,7 @@ uintptr_t *executeJava() {
                         goto invokeMethod;
                     }
                 });
-            case 233:
+            case OPC_NEW_QUICK:
                 ({
                     {
                         Class *class = ((Class *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2698,7 +2698,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 235:
+            case OPC_ANEWARRAY_QUICK:
                 ({
                     {
                         Class *class = ((Class *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2722,7 +2722,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 238:
+            case OPC_CHECKCAST_QUICK:
                 ({
                     {
                         Class *class = ((Class *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2739,7 +2739,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 239:
+            case OPC_INSTANCEOF_QUICK:
                 ({
                     {
                         Class *class = ((Class *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2751,7 +2751,7 @@ uintptr_t *executeJava() {
                         };
                     }
                 });
-            case 243:
+            case OPC_MULTIANEWARRAY_QUICK:
                 ({
                     ({
                         Class *class = ((Class *) cp->info[(((pc)[1] << 8) | (pc)[2])]);
@@ -2777,7 +2777,7 @@ uintptr_t *executeJava() {
                         };
                     });
                 });
-            case 222:
+            case OPC_MIRANDA_BRIDGE:
                 ({
                     {
                         frame->mb = mb = mb->miranda_mb;;
@@ -2789,7 +2789,7 @@ uintptr_t *executeJava() {
                         }
                     }
                 });
-            case 223:
+            case OPC_ABSTRACT_METHOD_ERROR:
                 ({
                     {
                         ee->last_frame = frame->prev;
@@ -2807,7 +2807,7 @@ uintptr_t *executeJava() {
                         goto throwException;
                     }
                 });
-            case 214:
+            case OPC_INVOKEVIRTUAL_QUICK:
                 ({
                     {
                         Class *new_class;
@@ -2825,27 +2825,25 @@ uintptr_t *executeJava() {
                 });
             invokeMethod:
             {
-
+                /* Create new frame first.  This is also created for natives
+                   so that they appear correctly in the stack trace */
 
                 Frame *new_frame = (Frame *) (arg1 + new_mb->max_locals);
-                Object *sync_ob = ((void *) 0);
+                Object *sync_ob = NULL;
 
                 frame->last_pc = pc;
-                ostack = (uintptr_t *) (((uintptr_t) (new_frame + 1) + 7) & ~7);
+                ostack = ALIGN_OSTACK(new_frame + 1);
 
                 if ((char *) (ostack + new_mb->max_stack) > ee->stack_end) {
                     if (ee->overflow++) {
-
-
+                        /* Overflow when we're already throwing stack overflow.
+                           Stack extension should be enough to throw exception,
+                           so something's seriously gone wrong - abort the VM! */
                         jam_fprintf(__stdoutp, "Fatal stack overflow!  Aborting VM.\n");
                         exitVM(1);
                     }
-                    ee->stack_end += 1 * 1024;
-                    {
-                        frame->last_pc = pc;
-                        signalChainedExceptionEnum(exception_java_lang_StackOverflowError, ((void *) 0), ((void *) 0));
-                        goto throwException;
-                    };
+                    ee->stack_end += STACK_RED_ZONE_SIZE;
+                    THROW_EXCEPTION(java_lang_StackOverflowError, NULL);
                 }
 
                 new_frame->mb = new_mb;
@@ -2855,13 +2853,13 @@ uintptr_t *executeJava() {
 
                 ee->last_frame = new_frame;
 
-                if (new_mb->access_flags & 0x0020) {
-                    sync_ob = new_mb->access_flags & 0x0008 ? (Object *) new_mb->class
+                if (new_mb->access_flags & ACC_SYNCHRONIZED) {
+                    sync_ob = new_mb->access_flags & ACC_STATIC ? (Object *) new_mb->class
                                                             : (Object *) *arg1;
                     objectLock(sync_ob);
                 }
 
-                if (new_mb->access_flags & 0x0100) {
+                if (new_mb->access_flags & ACC_NATIVE) {
                     ClassBlock *cb = CLASS_CB(new_mb->class);
 //                    jam_printf("native call %s.%s%s \n", cb->name, new_mb->name, new_mb->type);
                     ostack = (*new_mb->native_invoker)(new_mb->class, new_mb, arg1);
@@ -2873,24 +2871,19 @@ uintptr_t *executeJava() {
 
                     if (ee->exception)
                         goto throwException;
-                    {
-                        pc += *pc >= 249 ? 5 : 3;
-                        break;
-                    };
+                    DISPATCH(0, *pc >= OPC_INVOKEINTERFACE_QUICK ? 5 : 3);
                 } else { ;
                     frame = new_frame;
                     mb = new_mb;
                     lvars = new_frame->lvars;
                     this = (Object *) lvars[0];
                     pc = (CodePntr) mb->code;
+//                    cp = &(CLASS_CB(mb->class)->constant_pool);
                     cp = &(((ClassBlock *) (mb->class + 1))->constant_pool);
                     ClassBlock *cb = CLASS_CB(mb->class);
 //                    jam_printf("java call %s.%s%s \n", cb->name, mb->name, mb->type);
                 }
-                {
-                    pc += 0;
-                    break;
-                }
+                DISPATCH_FIRST
             }
 
             methodReturn:

@@ -94,14 +94,17 @@ void *executeMethodVaList(Object *ob, Class *class, MethodBlock *mb,
 //    CREATE_TOP_FRAME(ee, class, mb, sp, ret);
     // 手动宏展开
     {
-        // 以 main 方法的调用为例，栈在内存的布局如下
-        // last -> mb -> max_stack = 0 , mb -> max_stack = 3 , mb -> max_locals = 1
+        // 以 main 方法的调用为例，栈在内存的布局如下, sizeof(Frame) -> 40 -> 0x28
+        // last -> mb -> max_stack = 0 , mb -> max_stack = 3 , mb -> max_locals = 3
         // | last | dummy | new |
+        // | 40 B | 40 B  | 24 B locals | 40 B frame    | 24 B ostack |
+        //                | <-- ret(sp)     | <-- new_frame
         Frame *last = ee->last_frame;
         Frame *dummy = (Frame *) (last->ostack + last->mb->max_stack);
         Frame *new_frame;
         uintptr_t *new_ostack;
 
+        // ret 的地址是新栈帧的本地变量表的首地址，因此可以推测，解释器执行时的返回逻辑，需要将操作数栈上的值赋值到本地变量表
         ret = (void *) (sp = (uintptr_t *) (dummy + 1));
         new_frame = (Frame *) (sp + mb->max_locals);
         // 8 字节对齐
@@ -140,7 +143,37 @@ void *executeMethodVaList(Object *ob, Class *class, MethodBlock *mb,
     if (ob)
         *sp++ = (uintptr_t) ob; /* push receiver first */
 
-    SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp))
+    // 准备参数
+//    SCAN_SIG(sig, VA_DOUBLE(jargs, sp), VA_SINGLE(jargs, sp))
+    // 准备参数 demacro
+    // 往本地变量表里写参数
+    sig++;               /* skip start ( */
+    while (*sig != ')') {
+        if ((*sig == 'J') || (*sig == 'D')) {
+            if (*sig == 'D')
+                *(double *) sp = va_arg(jargs, double);
+            else
+                *(u8 *) sp = va_arg(jargs, u8);
+            sp += 2;
+            sig++;
+        } else {
+            if (*sig == 'L' || *sig == '[')
+                *sp = va_arg(jargs, uintptr_t) & ~REF_MASK;
+            else if (*sig == 'F')
+                *((float *) sp + IS_BE64) = va_arg(jargs, double);
+            else
+                *sp = va_arg(jargs, u4);
+            sp++;
+            if (*sig == '[')
+                for (sig++; *sig == '['; sig++);
+            if (*sig == 'L')
+                while (*sig++ != ';');
+            else
+                sig++;
+        }
+    }
+    sig++;               /* skip end ) */
+    // END
 
     if (mb->access_flags & ACC_SYNCHRONIZED)
         objectLock(ob ? ob : mb->class);
@@ -158,7 +191,10 @@ void *executeMethodVaList(Object *ob, Class *class, MethodBlock *mb,
     if (mb->access_flags & ACC_SYNCHRONIZED)
         objectUnlock(ob ? ob : mb->class);
 
-    POP_TOP_FRAME(ee);
+//    POP_TOP_FRAME(ee);
+    // demacro
+    ee->last_frame = ee->last_frame->prev->prev;
+    // END
 
     return ADJUST_RET_ADDR(ret, *sig);
 }
