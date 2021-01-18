@@ -2,9 +2,10 @@
 #define KKK_CONFIG_H
 
 #define VERSION "0.0.1-devel"
-#define HAVE_ALLOCA_H 1
 
+// 写死的安装文件目录，后续应可通过编译参数控制
 #define INSTALL_DIR "/usr/local/app/neojam"
+// 写死的 classpath 安装路径，后续应可通过编译参数控制
 #define CLASSPATH_INSTALL_DIR "/usr/local/classpath"
 
 /* src/config.h.  Generated from config.h.in by configure.  */

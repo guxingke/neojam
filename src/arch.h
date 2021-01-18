@@ -108,10 +108,30 @@ extern void setDoublePrecision();
 
 #define FLUSH_CACHE(addr, length)
 
+// ---
+// 聊聊原子变量、锁、内存屏障那点事 https://www.0xffffff.org/2017/02/21/40-atomic-variable-mutex-and-memory-barrier/
+
+// 内存屏障
+// 防止指令之间的重排序
+// 保证数据的可见性
+
+// 保证了mfence前后的Store和Load指令的顺序，防止Store和Load重排序
+// 保证了mfence之后的Store指令全局可见之前，mfence之前的Store指令要先全局可见
 #define MBARRIER()  __asm__ __volatile__ ("mfence" ::: "memory")
+// 保证了lfence前后的Load指令的顺序，防止Load重排序
+// 刷新Load Buffer
 #define RMBARRIER() __asm__ __volatile__ ("lfence" ::: "memory")
+// 保证了sfence前后Store指令的顺序，防止Store重排序
+// 通过刷新Store Buffer保证sfence之前的Store要指令对全局可见
 #define WMBARRIER() __asm__ __volatile__ ("sfence" ::: "memory")
+
+// 优化屏障 避免编译器的重排序优化操作，保证编译程序时在优化屏障之前的指令不会在优化屏障之后执行。这就保证了编译时期的优化不会影响到实际代码逻辑顺序
+
+// 内存信息已经修改，屏障后的寄存器的值必须从内存中重新获取
+// 必须按照代码顺序产生汇编代码，不得越过屏障
 #define JMM_LOCK_MBARRIER()   __asm__ __volatile__ ("" ::: "memory")
 #define JMM_UNLOCK_MBARRIER() __asm__ __volatile__ ("" ::: "memory")
+
+// END---
 
 #endif //KKK_ARCH_H

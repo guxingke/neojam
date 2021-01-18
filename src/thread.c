@@ -20,7 +20,7 @@
 #define TRACE(fmt, ...)
 #endif
 
-#define HASHTABSZE 1<<4
+#define HASHTABSZE 1<<4 // 16
 HashTable thread_id_map;
 
 /* Size of Java stack to use if no size is given */
@@ -1217,7 +1217,7 @@ void exitVM(int status) {
     /* Execute System.exit() to run any registered shutdown hooks.
        In the unlikely event that System.exit() can't be found, or
        it returns, fall through and exit. */
-
+    // 执行 System.exit() 方法
     if(!VMInitialising()) {
         Class *system = findSystemClass(SYMBOL(java_lang_System));
         if(system) {
@@ -1238,6 +1238,7 @@ void mainThreadWaitToExitVM() {
     pthread_mutex_lock(&exit_lock);
 
     classlibSetThreadState(self, WAITING);
+    // 如果有非守护线程在运行，则主线程条件等待
     while(non_daemon_thrds)
         pthread_cond_wait(&exit_cv, &exit_lock);
 
@@ -1265,9 +1266,9 @@ int initialiseThreadStage1(InitArgs *args) {
     pthread_mutex_init(&exit_lock, NULL);
     pthread_cond_init(&exit_cv, NULL);
 
-#ifndef HAVE_TLS
-    pthread_key_create(&self, NULL);
-#endif
+//#ifndef HAVE_TLS
+//    pthread_key_create(&self, NULL);
+//#endif
 
     pthread_attr_init(&attributes);
     pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_DETACHED);

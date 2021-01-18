@@ -281,6 +281,7 @@ int main(int argc, char *argv[]) {
         uncaughtException();
 
     /* Wait for all but daemon threads to die */
+    // 等待所有非守护进程结束
     mainThreadWaitToExitVM();
     exitVM(status);
 
