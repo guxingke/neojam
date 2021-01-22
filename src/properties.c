@@ -28,6 +28,8 @@ char *getCommandLineProperty(char *key) {
     return NULL;
 }
 
+// 通过 -Dxxx=xxx 传递的参数
+// 以及 JAVA_HOME 位置
 int initialiseProperties(InitArgs *args) {
     commandline_props = args->commandline_props;
     commandline_props_count = args->props_count;

@@ -286,7 +286,9 @@ void clearMarkBits() {
     memset(markbits, 0, markbit_size * sizeof(*markbits));
 }
 
+// 初始化虚拟机堆
 int initialiseAlloc(InitArgs *args) {
+    // 通过 mmap 分配内存  https://www.cnblogs.com/huxiao-tee/p/4660352.html
     char *mem = (char*)mmap(0, args->max_heap, PROT_READ|PROT_WRITE,
                             MAP_PRIVATE|MAP_ANON, -1, 0);
     if(mem == MAP_FAILED) {
@@ -296,6 +298,7 @@ int initialiseAlloc(InitArgs *args) {
     }
 
     /* Align heapbase so that start of heap + HEADER_SIZE is object aligned */
+    // 8 字节对齐
     heapbase = (char*)(((uintptr_t)mem+HEADER_SIZE+OBJECT_GRAIN-1)&
                        ~(OBJECT_GRAIN-1))-HEADER_SIZE;
 

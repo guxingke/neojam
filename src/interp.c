@@ -34,8 +34,7 @@ uintptr_t *executeJava() {
     ;
     pc = (CodePntr) mb->code;
 
-
-    while (1) {
+    while (TRUE) {
 //        jam_printf("%x %u\n", *pc, *pc);
 //        ClassBlock *cb = CLASS_CB(mb->class);
 //        if (strcmp(cb->name, "java/io/File") == 0) {
@@ -2961,13 +2960,9 @@ uintptr_t *executeJava() {
 
 
 int initialiseInterpreter(InitArgs *args) {
-
-
-    return 1;
+    return TRUE;
 }
 
 void shutdownInterpreter() {
-
-
 }
 

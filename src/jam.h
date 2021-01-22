@@ -403,11 +403,14 @@ typedef unsigned long long u8;
 
 typedef uintptr_t ConstantPoolEntry;
 
+// 常量池
 typedef struct constant_pool {
+    // 类型, why volatile ?
     volatile u1 *type;
     ConstantPoolEntry *info;
 } ConstantPool;
 
+// 异常表
 typedef struct exception_table_entry {
     u2 start_pc;
     u2 end_pc;
@@ -415,6 +418,7 @@ typedef struct exception_table_entry {
     u2 catch_type;
 } ExceptionTableEntry;
 
+// 源码行号关联表
 typedef struct line_no_table_entry {
     u2 start_pc;
     u2 line_no;
@@ -427,6 +431,7 @@ typedef struct object {
     Class *class;
 } Object;
 
+// 属性表
 typedef struct attribute_data {
     u1 *data;
     int len;
@@ -554,6 +559,7 @@ typedef struct methodblock MethodBlock;
 
 typedef uintptr_t *(*NativeMethod)(Class *, MethodBlock *, uintptr_t *);
 
+// 方法体
 struct methodblock {
     Class *class;
     char *name;
@@ -626,6 +632,7 @@ typedef struct resolved_inv_dyn_cp_entry {
 #endif
 } ResolvedInvDynCPEntry;
 
+// 字段体
 typedef struct fieldblock {
     Class *class;
     char *name;
@@ -655,10 +662,10 @@ typedef struct refs_offsets_entry {
     int end;
 } RefsOffsetsEntry;
 
+// 类体
 typedef struct classblock {
     CLASSLIB_CLASS_PAD
-    u1
-            state;
+    u1 state;
     u2 flags;
     u2 access_flags;
     u2 declaring_class;
@@ -701,7 +708,7 @@ typedef struct classblock {
     CLASSLIB_CLASS_EXTRA_FIELDS
 } ClassBlock;
 
-// 操作舒展
+// 栈帧
 typedef struct frame {
     // 字节码
     CodePntr last_pc;
@@ -723,16 +730,25 @@ typedef struct jni_frame {
     struct frame *prev;
 } JNIFrame;
 
+// 执行环境
 typedef struct exec_env {
+    // 异常对象
     Object *exception;
+    // 当前栈地址
     char *stack;
+    // 最大栈地址
     char *stack_end;
+    // 栈大小
     int stack_size;
+    // 栈帧链表
     Frame *last_frame;
+    // java 线程
     Object *thread;
+    // 栈溢出标记
     char overflow;
 } ExecEnv;
 
+// 属性，简单键值对
 typedef struct prop {
     char *key;
     char *value;
@@ -791,36 +807,56 @@ typedef struct InitArgs {
 #endif
 } InitArgs;
 
+// 实例内存操作相关
+
+// 从 object 实例获取 ClassBlock
 #define CLASS_CB(classRef)           ((ClassBlock*)(classRef+1))
 
+// object 的字段值
 #define INST_DATA(obj, type, offset) *(type*)&((char*)obj)[offset]
+// object 实例的字段位置
 #define INST_BASE(obj, type)         ((type*)(obj+1))
 
+// 数组数据
 #define ARRAY_DATA(arrayRef, type)   ((type*)(((uintptr_t*)(arrayRef+1))+1))
+// 数组长度
 #define ARRAY_LEN(arrayRef)          *(uintptr_t*)(arrayRef+1)
-
+// 实例对应的 Class 是不是 java/lang/Class;
 #define IS_CLASS(object)             (object->class && IS_CLASS_CLASS( \
                                                   CLASS_CB(object->class)))
-
+// 接口？
 #define IS_INTERFACE(cb)             (cb->access_flags & ACC_INTERFACE)
 #define IS_SYNTHETIC(cb)             (cb->access_flags & ACC_SYNTHETIC)
 #define IS_ANNOTATION(cb)            (cb->access_flags & ACC_ANNOTATION)
 #define IS_ENUM(cb)                  (cb->access_flags & ACC_ENUM)
+// 数组？
 #define IS_ARRAY(cb)                 (cb->state == CLASS_ARRAY)
+// 原始类型？
 #define IS_PRIMITIVE(cb)             (cb->state >= CLASS_PRIM)
 
+// 是否有 Finalize 方法
 #define IS_FINALIZED(cb)             (cb->flags & FINALIZED)
+// 是否指定了引用类型，如 soft,weak,phantom
 #define IS_REFERENCE(cb)             (cb->flags & REFERENCE)
+// 软引用？
 #define IS_SOFT_REFERENCE(cb)        (cb->flags & SOFT_REFERENCE)
+// 弱引用？
 #define IS_WEAK_REFERENCE(cb)        (cb->flags & WEAK_REFERENCE)
+// 幽灵引用？
 #define IS_PHANTOM_REFERENCE(cb)     (cb->flags & PHANTOM_REFERENCE)
+// 类加载器？
 #define IS_CLASS_LOADER(cb)          (cb->flags & CLASS_LOADER)
+// 重复加载类？
 #define IS_CLASS_DUP(cb)             (cb->flags & CLASS_CLASH)
+// java/lang/Class?
 #define IS_CLASS_CLASS(cb)           (cb->flags & CLASS_CLASS)
+// 匿名？
 #define IS_ANONYMOUS(cb)             (cb->flags & ANONYMOUS)
+// 特殊类？
 #define IS_SPECIAL(cb)               (cb->flags & (CLASSLIB_CLASS_SPECIAL | \
                                                    CLASS_CLASS | REFERENCE | \
                                                    CLASS_LOADER))
+// 特殊类？
 #define IS_CLASSLIB_SPECIAL(cb)      (cb->flags & CLASSLIB_CLASS_SPECIAL)
 #define IS_MEMBER(cb)                cb->declaring_class
 #define IS_LOCAL(cb)                 (cb->enclosing_method && !IS_ANONYMOUS(cb))
@@ -917,61 +953,88 @@ typedef struct InitArgs {
 
 /* Alloc */
 
+// 初始化内存分配
 extern int initialiseAlloc(InitArgs *args);
 
+// 初始化 GC
 extern int initialiseGC(InitArgs *args);
 
+// 分配 Class
 extern Class *allocClass();
 
+// 分配 Object
 extern Object *allocObject(Class *class);
 
+// 分配原始类型数组
 extern Object *allocTypeArray(int type, int size);
 
+// 分配引用类型数据
 extern Object *allocObjectArray(Class *element_class, int size);
 
+// 分配数组
 extern Object *allocArray(Class *class, int size, int el_size);
 
+// 分配多维数组
 extern Object *allocMultiArray(Class *array_class, int dim, intptr_t *count);
 
+// clone 实例
 extern Object *cloneObject(Object *ob);
 
+// 获取实例的 hashcode
 extern uintptr_t getObjectHashcode(Object *ob);
 
+// gc1
 extern void gc1();
 
+// 执行 finalize 方法
 extern void runFinalizers();
 
+// 释放堆内存
 extern unsigned long freeHeapMem();
 
+// 获取堆大小
 extern unsigned long totalHeapMem();
 
 extern unsigned long maxHeapMem();
 
+// 系统内存分配
 extern void *sysMalloc(int n);
 
+// 系统内存释放
 extern void sysFree(void *ptr);
 
+// 系统内存重分配
 extern void *sysRealloc(void *ptr, int n);
 
+// 堆内存分配
 extern void *gcMemMalloc(int n);
 
+// 堆内存释放
 extern void gcMemFree(void *ptr);
 
+// 堆内存重分配
 extern void *gcMemRealloc(void *ptr, int n);
 
+// 注册静态实例引用
 extern void registerStaticObjectRef(Object **ref);
 
+// 并发注册静态实例引用
 extern void registerStaticObjectRefLocked(Object **ref, Object *obj);
 
+// 为什么要宏？
 #define registerStaticClassRef(ref) \
     registerStaticObjectRef(ref);
 
+// 为什么用宏？
 #define registerStaticClassRefLocked(ref, class) \
     registerStaticObjectRefLocked(ref, class);
 
+// 添加到待 gc 列表
 extern void gcPendingFree(void *addr);
 
 /* GC support */
+
+// 标记 GC ROOTS
 extern void markRoot(Object *ob);
 
 extern void markConservativeRoot(Object *ob);
@@ -992,53 +1055,72 @@ extern void threadReference(Object **ref);
 
 /* Class */
 
+// 全局变量 java_lang_Class， 虚拟机内部独一份，必须有
 extern Class *java_lang_Class;
 
+// 准备阶段
 extern Class *parseClass(char *classname, char *data, int offset, int len,
                          Object *class_loader);
 
+// 定义类
 extern Class *defineClass(char *classname, char *data, int offset, int len,
                           Object *class_loader);
 
+// 链接阶段
 extern void linkClass(Class *class);
 
+// 类初始化
 extern Class *initClass(Class *class);
 
+// 通过启动类加载器加载，准备，链接，并初始化指定类
 extern Class *findSystemClass(char *name);
 
+// 通过启动类加载器加载，准备，链接类
 extern Class *findSystemClass0(char *name);
 
+// 通过启动类加载器加载
 extern Class *loadSystemClass(char *name);
 
+// 原始类型对应的类 8 个
 extern Class *findPrimitiveClass(char name);
 
 extern Class *findPrimitiveClassByName(char *name);
 
+// 定位缓存类
 extern Class *findHashedClass(char *name, Object *loader);
 
+// 通过指定 classloader 加载类
 extern Class *findClassFromClassLoader(char *name, Object *loader);
 
+// 通过指定 classloader 加载数组类
 extern Class *findArrayClassFromClassLoader(char *name, Object *loader);
 
+// 获取系统类加载器
 extern Object *getSystemClassLoader();
 
+// 启动类加载器 classpath 长度
 extern int bootClassPathSize();
 
 extern char *getBootClassPathEntry(int index);
 
 extern Object *bootClassPathResource(char *filename, int index);
 
+// 指定类对应的数组类
 #define findArrayClassFromClass(name, class) \
              findArrayClassFromClassLoader(name, CLASS_CB(class)->class_loader)
 
+// 数组类
 #define findArrayClass(name) findArrayClassFromClassLoader(name, NULL)
 
+// ? 什么场景？
 #define findClassFromClass(classname, class)                               \
     (CLASS_CB(class)->name == classname ? class :                          \
         findClassFromClassLoader(classname, CLASS_CB(class)->class_loader))
 
+// 主要是释放关联的类缓存 hashmap
 extern void freeClassLoaderData(Object *class_loader);
 
+// class 是在 jvm 堆内分配的，但 class 内部的一些引用如常量池等是在 sys 堆分配的，通过此方法释放在 sys 堆内分配的内存
 extern void freeClassData(Class *class);
 
 extern char *getClassPath();
@@ -1047,8 +1129,10 @@ extern char *getBootClassPath();
 
 extern char *getEndorsedDirs();
 
+// GC
 extern void markBootClasses();
 
+// GC
 extern void markLoaderClasses(Object *loader, int mark);
 
 extern void threadBootClasses();
@@ -1057,37 +1141,49 @@ extern void threadLoaderClasses(Object *class_loader);
 
 extern void newLibraryUnloader(Object *class_loader, void *entry);
 
+// 初始化 class stage 1
 extern int initialiseClassStage1(InitArgs *args);
 
+// 初始化 class stage 2
 extern int initialiseClassStage2();
 
 extern Object *bootPackage(char *package_name);
 
 extern Object *bootPackages();
 
+// TODO .
 extern int hideFieldFromGC(FieldBlock *hidden);
 
 /* resolve */
 
+// 从指定类查找 field
 extern FieldBlock *findField(Class *, char *, char *);
 
+// 从指定类查找 method
 extern MethodBlock *findMethod(Class *class, char *methodname, char *type);
 
+// 递归查找 field
 extern FieldBlock *lookupField(Class *, char *, char *);
 
+// 递归查找 method
 extern MethodBlock *lookupMethod(Class *class, char *methodname, char *type);
 
+// 递归查找接口方法
 extern MethodBlock *lookupInterfaceMethod(Class *class, char *methodname,
                                           char *type);
-
+// 递归查找虚方法
 extern MethodBlock *lookupVirtualMethod(Object *ob, MethodBlock *mb);
 
+// 解析类, 依赖 class 内部的常量池
 extern Class *resolveClass(Class *class, int index, int check_access, int init);
 
+// 解析方法
 extern MethodBlock *resolveMethod(Class *class, int index);
 
+// 解析接口方法
 extern MethodBlock *resolveInterfaceMethod(Class *class, int index);
 
+// 解析字段
 extern FieldBlock *resolveField(Class *class, int index);
 
 extern uintptr_t resolveSingleConstant(Class *class, int index);
