@@ -29,6 +29,7 @@ char *symbol_values[] = {
         SYMBOLS_DO(SYMBOL_VALUE)
 };
 
+// 把 symbol 对应的字符串放到字符串常量池内
 int initialiseSymbol() {
     int i;
 

@@ -1,7 +1,7 @@
 
-#include "../jam.h"
-#include "../thread.h"
-#include "../reflect.h"
+#include "../core/jam.h"
+#include "../core/thread.h"
+#include "../core/reflect.h"
 #include "gcp.h"
 
 /* The function classlibGetCallerFrame() is used in code that does

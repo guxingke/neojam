@@ -203,9 +203,11 @@ NativeMethod resolveNativeMethod(MethodBlock *mb) {
     }
 
     /* First see if it's an internal native method */
+    // 内部实现的本地方法
     method = lookupInternal(mb);
 
     if(method == NULL)
+        // 从动态链接库中查找
         method = lookupLoadedDlls(mb);
 
     if(verbose)
@@ -432,6 +434,7 @@ void *lookupLoadedDlls0(char *name, Object *loader) {
 {                                                             \
     DllEntry *dll = (DllEntry*)ptr;                           \
     if(dll->loader == loader) {                               \
+        /* 通过符号定位到函数指针 */                              \
         sym = nativeLibSym(dll->handle, name);                \
         if(sym != NULL)                                       \
             goto out;                                         \
@@ -583,7 +586,9 @@ NativeMethod findJNIStub(char *sig, JNIStub *stubs) {
     return stubs[i].func;
 }
 
+// 创建本地方法
 NativeMethod setJNIMethod(MethodBlock *mb, void *func) {
+    // 方法签名归一化
     char *simple = convertSig2Simple(mb->type);
     NativeMethod invoker;
 
@@ -609,6 +614,8 @@ NativeMethod setJNIMethod(MethodBlock *mb, void *func) {
     } else
         sysFree(simple);
 
+    // mb 的 code 关联到函数指针
+    // invoker 内部使用 code 来调用
     mb->code = func;
     return mb->native_invoker = invoker;
 }
@@ -616,6 +623,7 @@ NativeMethod setJNIMethod(MethodBlock *mb, void *func) {
 NativeMethod lookupLoadedDlls(MethodBlock *mb) {
     char *mangled = mangleClassAndMethodName(mb);
     Object *loader = (CLASS_CB(mb->class))->class_loader;
+    // 定位到符号对应的函数指针
     void *func = classlibLookupLoadedDlls(mangled, loader);
 
     if(func == NULL) {
@@ -623,6 +631,7 @@ NativeMethod lookupLoadedDlls(MethodBlock *mb) {
         char *fullyMangled = sysMalloc(strlen(mangled)+strlen(mangledSig)+3);
 
         sprintf(fullyMangled, "%s__%s", mangled, mangledSig);
+        // try again
         func = classlibLookupLoadedDlls(fullyMangled, loader);
 
         sysFree(fullyMangled);

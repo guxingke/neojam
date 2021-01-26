@@ -407,6 +407,7 @@ void resetPeakThreadsCount() {
 }
 
 void initialiseJavaStack(ExecEnv *ee) {
+    // 256 kb
     int stack_size = ee->stack_size
                      ? (ee->stack_size > MIN_STACK ? ee->stack_size : MIN_STACK)
                      : dflt_stack_size;
@@ -419,11 +420,13 @@ void initialiseJavaStack(ExecEnv *ee) {
     mb->args_count = 0;
     mb->max_stack = 0;
     top->prev = NULL;
+    // 这个 mb 似乎没用？
     top->mb = mb;
 
     ee->stack = stack;
     ee->last_frame = top;
     ee->stack_size = stack_size;
+    // STACK_RED_ZONE_SIZE 是为异常处理保留的
     ee->stack_end = stack + stack_size-STACK_RED_ZONE_SIZE;
 }
 
@@ -436,6 +439,7 @@ Object *initJavaThread(Thread *thread, char is_daemon, char *name,
     if((jlthread = allocObject(thread_class)) == NULL)
         return NULL;
 
+    // 关联线程实例
     thread->ee->thread = jlthread;
 
     /* Create the string for the thread name.  If null is specified
@@ -1312,6 +1316,8 @@ int initialiseThreadStage2(InitArgs *args) {
     MethodBlock *run, *remove_thread;
 
     /* Load thread class and register reference for compaction threading */
+
+    // java/lang/Thread
     if((thread_class = findSystemClass0(SYMBOL(java_lang_Thread))) == NULL)
         goto error;
 
@@ -1339,6 +1345,7 @@ int initialiseThreadStage2(InitArgs *args) {
     threadId_offset = threadId->u.offset;
     run_mtbl_idx = run->method_table_index;
 
+    // java/lang/ThreadGroup
     thrdGrp_class = findSystemClass(SYMBOL(java_lang_ThreadGroup));
 
     if(exceptionOccurred())
@@ -1363,10 +1370,13 @@ int initialiseThreadStage2(InitArgs *args) {
         goto error;
 
     /* Initialise the Java-level thread objects for the main thread */
+
+    // 初始化 java main thread
     java_thread = initJavaThread(&main_thread, FALSE, "main", main_group);
     if(java_thread == NULL)
         goto error;
 
+    // set to RUNNING
     classlibSetThreadState(&main_thread, RUNNING);
 
     /* Setup signal handling.  This will be inherited by all

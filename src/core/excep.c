@@ -41,11 +41,15 @@ static int exception_symbols[] = {
         EXCEPTIONS_DO(SYMBOL_NAME_ENUM)
 };
 
+// 异常初始化
 int initialiseException() {
     int i;
 
+    // [Ljava/lang/StackTraceElement
     ste_array_class = findArrayClass(SYMBOL(array_java_lang_StackTraceElement));
+    // java/lang/StackTraceElement
     ste_class = findSystemClass0(SYMBOL(java_lang_StackTraceElement));
+    // java/lang/Throwable
     throw_class = findSystemClass0(SYMBOL(java_lang_Throwable));
 
     if(ste_array_class != NULL && ste_class != NULL && throw_class != NULL)
@@ -63,6 +67,7 @@ int initialiseException() {
        These are preloaded to speed up access.  The VM will
        abort if any can't be loaded */
 
+    // 预加载异常类
     for(i = 0; i < MAX_EXCEPTION_ENUM; i++) {
         exceptions[i] = findSystemClass0(symbol_values[exception_symbols[i]]);
         registerStaticClassRef(&exceptions[i]);

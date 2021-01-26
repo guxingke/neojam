@@ -62,6 +62,7 @@ int initialiseJNI() {
     /* Initialise the global reference tables */
     initJNIGrefs();
 
+    // FIXME why annotations ?
     if(!classlibInitialiseJNI()) {
         jam_fprintf(stderr, "Error initialising VM (initialiseJNI)\n");
         return FALSE;

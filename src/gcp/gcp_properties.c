@@ -1,6 +1,6 @@
 
-#include "../jam.h"
-#include "../properties.h"
+#include "../core/jam.h"
+#include "../core/properties.h"
 
 char *classlibDefaultJavaHome() {
     return INSTALL_DIR;

@@ -20,10 +20,10 @@
 
 #include <string.h>
 
-#include "../jam.h"
-#include "../hash.h"
-#include "../class.h"
-#include "../symbol.h"
+#include "../core/jam.h"
+#include "../core/hash.h"
+#include "../core/class.h"
+#include "../core/symbol.h"
 
 /* Cached offset of vmdata field in java.lang.ClassLoader objects */
 int ldr_vmdata_offset;
@@ -153,6 +153,7 @@ void classlibNewLibraryUnloader(Object *class_loader, void *entry) {
         executeMethod(vmdata, ldr_new_unloader, (long long) (uintptr_t) entry);
 }
 
+// java/lang/VMClassLoader 初始化
 int classlibInitialiseClass() {
     FieldBlock *hashtable = NULL;
     Class *loader_data_class;

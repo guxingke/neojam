@@ -171,6 +171,7 @@ char *String2Cstr(Object *string) {
     return String2Buff0(string, buff, len);
 }
 
+// java/lang/String
 int initialiseString() {
     FieldBlock *value;
 
@@ -182,6 +183,7 @@ int initialiseString() {
     if(value == NULL)
         goto error;
 
+    // 虚拟机内唯一
     registerStaticClassRef(&string_class);
     value_offset = value->u.offset;
 

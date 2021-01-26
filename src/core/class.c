@@ -2227,6 +2227,7 @@ void freeClassLoaderData(Object *class_loader) {
     }
 }
 
+// ':' 分隔的多个路径
 void parseBootClassPath() {
     char *cp, *pntr, *start;
     int i, j, len, max = 0;
@@ -2437,7 +2438,9 @@ Object *bootClassPathResource(char *filename, int index) {
 int initialiseClassStage1(InitArgs *args) {
     verbose = args->verboseclass;
 
+    // -cp 参数
     setClassPath(args);
+    // boot class path
     setBootClassPath(args);
 
     parseBootClassPath();

@@ -2,9 +2,9 @@
 #define _POSIX_PTHREAD_SEMANTICS
 #include <signal.h>
 
-#include "../jam.h"
-#include "../symbol.h"
-#include "../thread.h"
+#include "../core/jam.h"
+#include "../core/symbol.h"
+#include "../core/thread.h"
 
 static int vmData_offset;
 static int thread_offset;
@@ -71,6 +71,7 @@ Object *classlibThreadPreInit(Class *thread_class, Class *thrdGrp_class) {
     FieldBlock *vmThread;
     FieldBlock *root, *thread;
 
+    // java/lang/VMThread
     if((vmthread_class = findSystemClass0(SYMBOL(java_lang_VMThread))) == NULL)
         return NULL;
 

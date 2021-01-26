@@ -303,7 +303,9 @@ int initialiseAlloc(InitArgs *args) {
                        ~(OBJECT_GRAIN-1))-HEADER_SIZE;
 
     /* Ensure size of heap is multiple of OBJECT_GRAIN */
+    // 堆最小地址
     heaplimit = heapbase+((args->min_heap-(heapbase-mem))&~(OBJECT_GRAIN-1));
+    // 堆最大地址
     heapmax = heapbase+((args->max_heap-(heapbase-mem))&~(OBJECT_GRAIN-1));
 
     /* Set initial free-list to one block covering entire heap */
@@ -1867,14 +1869,18 @@ int initialiseGC(InitArgs *args) {
     registerStaticObjectRef(&oom);
 
     executeMethod(oom, init, NULL);
+    // 预初始化 oom 实例，防止oom时没有空间用来抛出错误。
+    // END
 
     /* Create and start VM threads for the reference handler and finalizer */
     createVMThread("Finalizer", finalizerThreadLoop);
     createVMThread("Reference Handler", referenceHandlerThreadLoop);
 
     /* Create and start VM thread for asynchronous GC */
+
+    // 默认不开启异步 gc
     if(args->asyncgc)
-        createVMThread("Async GC", asyncGCThreadLoop);
+        createVMThread("Async GC", asyncGCThreadLoop); // gc 线程
 
     /* GC will use mark-sweep or mark-compact as appropriate, but this
        can be changed via the command line */

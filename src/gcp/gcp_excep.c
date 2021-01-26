@@ -1,5 +1,5 @@
-#include "../jam.h"
-#include "../symbol.h"
+#include "../core/jam.h"
+#include "../core/symbol.h"
 
 static Class *vmthrow_class;
 static int backtrace_offset;
@@ -7,6 +7,7 @@ static int backtrace_offset;
 int classlibInitialiseException(Class *throw_class) {
     FieldBlock *backtrace = NULL;
 
+    // java/lang/VMThrowable
     vmthrow_class = findSystemClass0(SYMBOL(java_lang_VMThrowable));
     if(vmthrow_class != NULL)
         backtrace = findField(vmthrow_class, SYMBOL(backtrace),

@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "jam.h" // must be first include
-#include "hash.h"
-#include "class.h"
-#include "symbol.h"
-#include "excep.h"
-#include "thread.h"
-#include "classlib.h"
+#include "core/jam.h" // must be first include
+#include "core/hash.h"
+#include "core/class.h"
+#include "core/symbol.h"
+#include "core/excep.h"
+#include "core/thread.h"
+#include "core/classlib.h"
 
 #ifdef USE_ZIP
 #define BCP_MESSAGE "<jar/zip files and directories separated by :>"

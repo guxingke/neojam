@@ -25,14 +25,14 @@
 #include <string.h>
 #include <errno.h>
 
-#include "../jam.h"
-#include "../alloc.h"
-#include "../thread.h"
-#include "../lock.h"
-#include "../natives.h"
-#include "../symbol.h"
-#include "../excep.h"
-#include "../reflect.h"
+#include "../core/jam.h"
+#include "../core/alloc.h"
+#include "../core/thread.h"
+#include "../core/lock.h"
+#include "../core/natives.h"
+#include "../core/symbol.h"
+#include "../core/excep.h"
+#include "../core/reflect.h"
 #include "gcp.h"
 
 static int pd_offset;

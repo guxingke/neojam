@@ -378,6 +378,8 @@ typedef struct JavaVMAttachArgs {
     jobject group;
 } JavaVMAttachArgs;
 
+jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args) ;
+
 #undef VIRTUAL_METHOD
 #undef NONVIRTUAL_METHOD
 #undef STATIC_METHOD

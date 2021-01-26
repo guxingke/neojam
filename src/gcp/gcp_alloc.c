@@ -1,5 +1,5 @@
-#include "../jam.h"
-#include "../thread.h"
+#include "../core/jam.h"
+#include "../core/thread.h"
 #include "gcp.h"
 
 #ifdef TRACEGC

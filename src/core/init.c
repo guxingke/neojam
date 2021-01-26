@@ -90,9 +90,9 @@ int initVM(InitArgs *args) {
              initialiseException() &&
              initialiseNatives() &&
 //             initialiseAccess() &&  // nothing
-             initialiseFrame() &&
+//             initialiseFrame() &&  // nothing
              initialiseJNI() &&
-             initialiseInterpreter(args) &&
+//             initialiseInterpreter(args) && // nothing
              initialiseClassStage2() &&
              initialiseThreadStage2(args) &&
              initialiseGC(args);

@@ -1,8 +1,8 @@
 
-#include "../jam.h"
-#include "../excep.h"
-#include "../symbol.h"
-#include "../reflect.h"
+#include "../core/jam.h"
+#include "../core/excep.h"
+#include "../core/symbol.h"
+#include "../core/reflect.h"
 
 static Class *cons_reflect_class, *method_reflect_class;
 static Class *field_reflect_class, *vmcons_reflect_class;
